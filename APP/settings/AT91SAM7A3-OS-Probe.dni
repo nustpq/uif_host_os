@@ -1,0 +1,101 @@
+[JLinkDriver]
+WatchCond=_ 0
+Watch0=_ 0 "" 0 "" 0 "" 0 "" 0 0 0 0
+Watch1=_ 0 "" 0 "" 0 "" 0 "" 0 0 0 0
+[DebugChecksum]
+Checksum=-920334651
+[DisAssemblyWindow]
+NumStates=_ 1
+State 1=_ 1
+[InstructionProfiling]
+Enabled=_ 0
+[CodeCoverage]
+Enabled=_ 0
+[Profiling]
+Enabled=0
+[StackPlugin]
+Enabled=1
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnHow=0
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[BreakpointUsageDialog]
+Placement=_ 531 309 976 591
+[Interrupts]
+Enabled=1
+[MemoryMap]
+Enabled=0
+Base=0
+UseAuto=0
+TypeViolation=1
+UnspecRange=1
+ActionState=1
+[TraceHelper]
+Enabled=0
+ShowSource=1
+[Breakpoints]
+Bp0=_ "STD_CODE" "{C:\Windows\system32}.944.17@1" 0 0 0 0 "" 0 "" 0
+Bp1=_ "STD_CODE" "{C:\Windows\system32}.349.13@1" 0 0 0 0 "" 0 "" 0
+Bp2=_ "STD_CODE" "{C:\Windows\system32}.179.13@1" 0 0 0 0 "" 0 "" 0
+Bp3=_ "STD_CODE" "{C:\Windows\system32}.344.9@1" 0 0 0 0 "" 0 "" 0
+Bp4=_ "STD_CODE" "{C:\Windows\system32}.352.9@1" 0 0 0 0 "" 0 "" 0
+Bp5=_ "STD_CODE" "{C:\Windows\system32}.182.9@1" 0 0 0 0 "" 0 "" 0
+Bp6=_ "STD_CODE" "{G:\SVN Dir\PQ\Jupiter III Platform\Jupiter_III_Host_OS\Noah\ctr.c}.982.14@1" 0 0 0 0 "" 0 "" 0
+Count=7
+[Stack]
+FillEnabled=1
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnLogOnly=1
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[Exceptions]
+StopOnUncaught=_ 0
+StopOnThrow=_ 0
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
+
+
+[array_types]
+Fmt0=CPU_INT32U[256]	4	0
+Fmt1=unsigned short[4]	4	0
+[watch_formats]
+Fmt0={W}0:addr	4	0
+Fmt1={W}0:address	4	0
+Fmt2={W}0:rom_id	4	0
+Fmt3={W}0:temp	4	0
+Fmt4={W}0:temp2	4	0
+Fmt5={W}0:test	4	0
+Fmt6={W}0:val	4	0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[CallStackLog]
+Enabled=0
+[DriverProfiling]
+Enabled=0
+Mode=0
+Graph=0
+Symbiont=0
+Exclusions=
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[Disassemble mode]
+mode=2
+[Breakpoints2]
+Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Driver\flashd_efc.c}.680.43" 0 0 1 "" 0 "" 0
+Count=1
+[Aliases]
+Count=0
+SuppressDialog=0

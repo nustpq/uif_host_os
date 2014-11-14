@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<flash_board>
+  <pass>
+    <loader>$TOOLKIT_DIR$\config\flashloader\Atmel\AT91SAM7A3-EK\flash-at91sam7A3.flash</loader>
+    <range>CODE 0x100000 0x140000</range>
+    <rel_offset>0</rel_offset>
+    <args>--flash
+--boot
+</args>    
+  </pass>
+</flash_board>
