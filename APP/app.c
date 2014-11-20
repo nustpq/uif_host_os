@@ -193,7 +193,7 @@ static  void  App_TaskStart (void *p_arg)
         if(counter&0x3F) {
             LED_Clear( LED_DS1 );
         }
-        Ruler_Port_LED_Service();
+        //Ruler_Port_LED_Service();
 
         OSTimeDly(10); 
     

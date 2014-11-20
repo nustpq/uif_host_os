@@ -47,7 +47,7 @@
 #define TWID_ERROR_TIMEOUT           2
 #define TWID_ERROR_TIMEOUT2          3
 /// TWI clock frequency in Hz.
-#define TWCK            200000
+#define TWCK            100000
 
 
 //------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ extern   Twid twid;
 
 
 extern OS_EVENT *TWI_Sem_lock; //sem for TWI
-extern OS_EVENT *TWI_Sem_done; //sem for TWI
+//extern OS_EVENT *TWI_Sem_done; //sem for TWI
 
 #endif //#ifndef TWID_H
 

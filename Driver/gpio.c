@@ -22,12 +22,12 @@ static Pin pinsGpios[]  = {
 };
 
 
-
 //switch pins
-static const Pin pinsSwitches[] = {   SW0,      SW1, 
-                                        MODE_SW0, MODE_SW1, MODE_SW2, MODE_SW3 };
+static const Pin pinsSwitches[] = {   SW0,  SW1,  MODE_SW0, MODE_SW1, MODE_SW2, MODE_SW3 };
 
 
+    
+    
 static const unsigned int numGpios = PIO_LISTSIZE(pinsGpios);
 
 
@@ -38,7 +38,7 @@ void GPIO_Init(void)
   
     PIO_Configure( pinsSwitches,  PIO_LISTSIZE(pinsSwitches) );
     PIO_Configure( pinsGpios,     PIO_LISTSIZE(pinsGpios)     );   
-     PIO_Configure( pinsGpios,     PIO_LISTSIZE(pinsGpios)     ); 
+ 
     //PIO_InitializeInterrupts( AT91C_AIC_PRIOR_LOWEST );     
     //LED_Configure(LED_DS1);
     //LED_Configure(LED_DS2);
@@ -308,19 +308,18 @@ unsigned int Get_Switches( void )
 }
 
 
-
+//GPIO 0~7 detection
 unsigned int Get_Port_Detect( void )
 {
-    
-//    unsigned char i     =   0 ;
-//    unsigned int  value =   0 ;   
-//
-//    for( i=9; i<=12; i++ ) {      
-//        value <<= 1;
-//        value +=PIO_Get( &pinsGpios[i] );
-//    }
-//           
-//    return value;   
+    unsigned char i;
+    unsigned int  value =   0 ;   
+
+    for( i=0; i<8; i++ ) {      
+        value <<= 1;
+        value +=PIO_Get( &pinsGpios[i] );
+    }
+           
+    return value;   
 
 }
 

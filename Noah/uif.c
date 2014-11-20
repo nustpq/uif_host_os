@@ -296,7 +296,7 @@ unsigned char Write_Burst( BURST_WRITE burst_write )
                             break;                  
                      } 
                      
-                     OSTimeDly(1);             
+                     //OSTimeDly(1);             
                       
                     }
             

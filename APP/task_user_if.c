@@ -86,14 +86,15 @@ void  App_TaskUserIF (void *p_arg)
                 break;
                     
                 case MSG_TYPE_SWITCH ://Switch                
-                    APP_TRACE_INFO(("Switch status updated: \r\n SW1, SW0 \r\n"));
-                    APP_TRACE_INFO((" %4d, %4d\r\n", (key_state>>0)&(0x01),(key_state>>1)&(0x01) )); 
+                    APP_TRACE_INFO(("Switch status updated: \r\n MODE_SW3, MODE_SW2, MODE_SW1, MODE_SW0, SW1, SW0 \r\n"));
+                    APP_TRACE_INFO((" %4d,      %4d,     %4d,     %4d,  %4d, %4d\r\n", (key_state>>0)&(0x01),(key_state>>1)&(0x01),\
+                                   (key_state>>2)&(0x01),(key_state>>3)&(0x01),(key_state>>4)&(0x01),(key_state>>5)&(0x01) )); 
                     /**********************************************************************/
                     //To do something to do with Switch selection...                    
                     // Switch 'SW0' used to control DEBUG port:
                     //         0: ON :  UART1 used as debug port
                     //         1: OFF:  DBG UART used as debug port
-                    if( (key_state>>(8 + 1)) & 0x01) {  //check if SW0 switch status changed  
+                    if( (key_state>>(8 + 5)) & 0x01) {  //check if SW0 switch status changed  
                         OSTaskDel( APP_CFG_TASK_SHELL_PRIO ); 
                         OSSemSet (Bsp_Ser_Tx_Sem_lock, 1,  &err) ;
                         OSSemSet (Bsp_Ser_Rx_Sem_lock, 1,  &err) ;
@@ -109,17 +110,17 @@ void  App_TaskUserIF (void *p_arg)
 //                    // Switch 'SW1' used to control Buzzer mute:
 //                    //         0: ON :  Buzzer muted
 //                    //         1: OFF:  Buzzer unmuted
-//                    if( (key_state>>(8 + 0)) & 0x01) {  //check if SW1 switch status changed                         
-//                        if( ((key_state>>0)& 0x01 ) == 0 ) { 
-//                            BUZZER_MUTE =  1;   //mute buzzer                         
-//                        } else {                                                 
-//                            BUZZER_MUTE =  0;   //unmute buzzer
-//                        }
-//                    } 
+                    if( (key_state>>(8 + 0)) & 0x01) {  //check if SW1 switch status changed                         
+                        if( ((key_state>>0)& 0x01 ) == 0 ) { 
+                            BUZZER_MUTE =  1;   //mute buzzer                         
+                        } else {                                                 
+                            BUZZER_MUTE =  0;   //unmute buzzer
+                        }
+                    } 
                       // Switch 'SW1' used to control CODEC LOUT PGA Gain:
                       //         0: ON :  24dB attenuated signal for Phone MIC input
                       //         1: OFF:  Normal signal for ACQUA
-                      if( (key_state>>(8 + 0)) & 0x01) {  //check if SW1 switch status changed                         
+                      if( (key_state>>(8 + 4)) & 0x01) {  //check if SW1 switch status changed                         
                           if( ((key_state>>0)& 0x01 ) == 0 ) {                                
                               err = CODEC_LOUT_Small_Gain_En( true ) ;  //enable 24dB attenuated signal for Phone Mic                                               
                           } else {                                                 
@@ -136,62 +137,70 @@ void  App_TaskUserIF (void *p_arg)
                         //APP_TRACE_INFO(("Ruler port disabled !\r\n"));
                         break; 
                     }
-                    APP_TRACE_INFO(("Ruler port status changed:  Port[3..0] = [%1d%1d%1d%1d]\r\n",\
-                                    (key_state>>0)&(0x01),(key_state>>1)&(0x01),(key_state>>2)&(0x01),(key_state>>3)&(0x01) )); 
+                    APP_TRACE_INFO(("GPIO[0x%x].\r\n", key_state )); 
+                    APP_TRACE_INFO(("GPIO port status changed:  Port[7..0] = [%1d%1d%1d%1d%1d%1d%1d%1d]\r\n",\
+                                    (key_state>>0)&(0x01),(key_state>>1)&(0x01),(key_state>>2)&(0x01),(key_state>>3)&(0x01),\
+                                    (key_state>>4)&(0x01),(key_state>>5)&(0x01),(key_state>>6)&(0x01),(key_state>>7)&(0x01) )); 
                     
-                    for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {   
-                        if( (key_state>>( 8 + 3 - ruler_id)) & 0x01) {  //check if Ruler Port[0] switch status changed                            
-                            if( ( (key_state>>(3 - ruler_id)) & 0x01 ) == 0 ) { // ruler attached, setup ruler                              
-                                //LED_Set( LED_P0 + ruler_id );
-                                APP_TRACE_INFO(("Ruler[%d] Attached.\r\n", ruler_id ));                            
-                                Global_Ruler_State[ruler_id] = RULER_STATE_ATTACHED; 
-                                err = Init_Ruler( ruler_id ); 
-                                if( OS_ERR_NONE != err ) {
-                                    //LED_Clear( LED_P0 + ruler_id );
-                                    continue;
-                                }                         
-                                err = Setup_Ruler( ruler_id ); 
-                                if( OS_ERR_NONE != err ) {
-                                    //LED_Clear( LED_P0 + ruler_id );
-                                    continue;
-                                }
-////                                err = Ruler_Setup_Sync(  ruler_id );
-////                                if( OS_ERR_NONE != err ) {
-////                                    //LED_Clear( LED_P0 + ruler_id );
-////                                    continue;
-////                                }                                
-                                err = Get_Ruler_Type( ruler_id ); 
-                                if( OS_ERR_NONE != err ) {
-                                    //LED_Clear( LED_P0 + ruler_id );
-                                    continue;
-                                }
-                                err = Get_Ruler_Version( ruler_id ); 
-                                if( OS_ERR_NONE != err ) {
-                                    //LED_Clear( LED_P0 + ruler_id );
-                                    continue;
-                                }                                  
-                                err = Ruler_POST( ruler_id ); 
-                                if( OS_ERR_NONE != err ) {
-                                    //LED_Clear( LED_P0 + ruler_id );
-                                    continue;
-                                }                     
-                                Global_Ruler_State[ruler_id] = RULER_STATE_CONFIGURED ;                              
-//                                mic_mask = Global_Mic_Mask[ruler_id];
-//                                err = Update_Mic_Mask( ruler_id, mic_mask );
-//                                if( OS_ERR_NONE != err ) {                              
+                    for( ruler_id = 0 ; ruler_id < 8 ; ruler_id++ ) {   
+                        if( (key_state>>( 8 + 7 - ruler_id)) & 0x01) {  //check if Ruler Port[0] switch status changed                            
+                            if( ( (key_state>>(7 - ruler_id)) & 0x01 ) == 0 ) { // ruler attached, setup ruler                              
+                                LED_Clear( LED_P0 + ruler_id );
+                                APP_TRACE_INFO(("GPIO[%d] is Low Level.\r\n", ruler_id ));                            
+//                                Global_Ruler_State[ruler_id] = RULER_STATE_ATTACHED; 
+//                                err = Init_Ruler( ruler_id ); 
+//                                if( OS_ERR_NONE != err ) {
+//                                    //LED_Clear( LED_P0 + ruler_id );
 //                                    continue;
-//                                }   
-//                                if( mic_mask ) {
-//                                    Global_Ruler_State[ruler_id]= RULER_STATE_SELECTED;                                   
-//                                } 
-                                //OSTimeDly(500);
-                                //simple_test_use();//test for Dr.Yang and use USBApp0815.exe
-                                                                           
+//                                }                         
+//                                err = Setup_Ruler( ruler_id ); 
+//                                if( OS_ERR_NONE != err ) {
+//                                    //LED_Clear( LED_P0 + ruler_id );
+//                                    continue;
+//                                }
+//////                                err = Ruler_Setup_Sync(  ruler_id );
+//////                                if( OS_ERR_NONE != err ) {
+//////                                    //LED_Clear( LED_P0 + ruler_id );
+//////                                    continue;
+//////                                }                                
+//                                err = Get_Ruler_Type( ruler_id ); 
+//                                if( OS_ERR_NONE != err ) {
+//                                    //LED_Clear( LED_P0 + ruler_id );
+//                                    continue;
+//                                }
+//                                err = Get_Ruler_Version( ruler_id ); 
+//                                if( OS_ERR_NONE != err ) {
+//                                    //LED_Clear( LED_P0 + ruler_id );
+//                                    continue;
+//                                }                                  
+//                                err = Ruler_POST( ruler_id ); 
+//                                if( OS_ERR_NONE != err ) {
+//                                    //LED_Clear( LED_P0 + ruler_id );
+//                                    continue;
+//                                }                     
+//                                Global_Ruler_State[ruler_id] = RULER_STATE_CONFIGURED ;                              
+////                                mic_mask = Global_Mic_Mask[ruler_id];
+////                                err = Update_Mic_Mask( ruler_id, mic_mask );
+////                                if( OS_ERR_NONE != err ) {                              
+////                                    continue;
+////                                }   
+////                                if( mic_mask ) {
+////                                    Global_Ruler_State[ruler_id]= RULER_STATE_SELECTED;                                   
+////                                } 
+//                                //OSTimeDly(500);
+//                                //simple_test_use();//test for Dr.Yang and use USBApp0815.exe
+//                                                                           
                             } else { // ruler detached
-                                //LED_Clear( LED_P0 + ruler_id );
-                                APP_TRACE_INFO(("Ruler[%d] Detached.\r\n", ruler_id )); 
-                                Global_Ruler_State[ruler_id] = RULER_STATE_DETACHED ;
-                                Global_Mic_Mask[ruler_id]    = 0 ; 
+                                LED_Set( LED_P0 + ruler_id );
+                                APP_TRACE_INFO(("GPIO[%d] is High Level.\r\n", ruler_id ));                                 
+//                                Global_Ruler_State[ruler_id] = RULER_STATE_DETACHED ;
+//                                Global_Mic_Mask[ruler_id]    = 0 ; 
+                                if( ruler_id == 0 ) {
+                                    iM401_Bypass();
+                                    OSTimeDly(3000);
+                                    iM401_Standby();                                    
+                                }
+                                
                             } 
                 
 

@@ -62,8 +62,9 @@ void  App_TaskJoy (void *p_arg)
     CPU_INT32U   data ;
     CPU_INT32U   i ;
     
-    switch_value_prev      =  Get_Switches()    & 0x0F; //avoid a fake trigger after POR
-    ruler_port_value_prev  =  Get_Port_Detect() & 0x0F;
+    //avoid a fake trigger after POR
+    switch_value_prev      =  Get_Switches()    & 0x3F; 
+    ruler_port_value_prev  =  Get_Port_Detect() & 0xFF;
     
     //flash_test(); //debug use
     
@@ -93,15 +94,16 @@ void  App_TaskJoy (void *p_arg)
                 while( OSMboxPost(App_UserIF_Mbox, &data) == OS_ERR_MBOX_FULL ) {
                     OSTimeDly(10);  //
                 }
-                Debug_Audio();
+                //Debug_Audio();
             }       
             
         }
            
-        switch_value = Get_Switches() & 0x0F; //mask  
+        switch_value = Get_Switches() & 0x3F; //mask 
+        //APP_TRACE_INFO(("Get_Switches[0x%x].\r\n", switch_value )); 
         if( switch_value != switch_value_prev ) {  
-            OSTimeDly(100);
-            if( switch_value == Get_Switches() & 0x0F ) { //jitter immune                         
+            OSTimeDly(100); 
+            if( switch_value == Get_Switches() & 0x3F ) { //jitter immune                         
                 data = switch_value ^ switch_value_prev ;   
                 switch_value_prev = switch_value ;
                 data = ( data << 8 ) | (switch_value & 0xFF) ;
@@ -114,21 +116,22 @@ void  App_TaskJoy (void *p_arg)
             }
         }
         
-//        ruler_port_value = Get_Port_Detect() & 0x0F; //mask  
-//        if( ruler_port_value != ruler_port_value_prev ) {
-//            OSTimeDly(100); 
-//            if( ruler_port_value == Get_Port_Detect() & 0x0F ) {  //jitter immune
-//                data = ruler_port_value ^ ruler_port_value_prev ;   
-//                ruler_port_value_prev = ruler_port_value ;
-//                data = ( data << 8 ) | (ruler_port_value & 0xFF) ; 
-//                data &= ~MSG_TYPE_MASK ;
-//                data |= MSG_TYPE_PORT_DET;                 
-//                while ( OSMboxPost(App_UserIF_Mbox, &data) == OS_ERR_MBOX_FULL ) {
-//                    OSTimeDly(10);  //
-//                };          
-//                
-//            }
-//        }
+        ruler_port_value = Get_Port_Detect() & 0xFF; //mask  0~7
+        //APP_TRACE_INFO(("Get_Port_Detect[0x%x].\r\n", ruler_port_value )); 
+        if( ruler_port_value != ruler_port_value_prev ) {
+            //OSTimeDly(100); //for gpio detect, no need delay
+            if( ruler_port_value == Get_Port_Detect() & 0xFF ) {  //jitter immune
+                data = ruler_port_value ^ ruler_port_value_prev ;   
+                ruler_port_value_prev = ruler_port_value ;
+                data = ( data << 8 ) | (ruler_port_value & 0xFF) ; 
+                data &= ~MSG_TYPE_MASK ;
+                data |= MSG_TYPE_PORT_DET;                 
+                while ( OSMboxPost(App_UserIF_Mbox, &data) == OS_ERR_MBOX_FULL ) {
+                    OSTimeDly(10);  //
+                };          
+                
+            }
+        }
    
         AB_Status_Change_Report();
         

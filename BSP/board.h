@@ -350,6 +350,11 @@
 #define LED2              {1 << 27, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_1, PIO_DEFAULT}
 #define SW0               {1 << 28, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_INPUT, PIO_DEFAULT} //switch: inquire
 #define SW1               {1 << 29, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_INPUT, PIO_DEFAULT} 
+
+#define MODE_SW0          {1 << 0, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_INPUT, PIO_DEFAULT} 
+#define MODE_SW1          {1 << 1, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_INPUT, PIO_DEFAULT}
+#define MODE_SW2          {1 << 2, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_INPUT, PIO_DEFAULT}
+#define MODE_SW3          {1 << 3, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_INPUT, PIO_DEFAULT}  
                      
 #define GPIO_0            {1 << 18, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_INPUT, PIO_PULLUP}
 #define GPIO_1            {1 << 19, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_INPUT, PIO_PULLUP} 
@@ -369,17 +374,14 @@
 #define GPIO_6_LED        {1 << 12, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_1, PIO_DEFAULT}
 #define GPIO_7_LED        {1 << 13, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_1, PIO_DEFAULT}
    
-#define MODE_SW0          {1 << 0, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_INPUT, PIO_DEFAULT} 
-#define MODE_SW1          {1 << 1, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_INPUT, PIO_DEFAULT}
-#define MODE_SW2          {1 << 2, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_INPUT, PIO_DEFAULT}
-#define MODE_SW3          {1 << 3, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_INPUT, PIO_DEFAULT}  
+
                      
 //GPIO controls
 #define GPIO_PDMIN_CLK_DIR        {1 << 24, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_1, PIO_PULLUP} //PDMIN CLK DIR, default output 
 #define GPIO_MATER_SLAVE_CTR      {1 << 25, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_1, PIO_PULLUP} //Codec as Master, EVM as Slave
-#define GPIO_CODEC_RESET  {1 << 26, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_1, PIO_PULLUP} //codec reset
-#define GPIO_AUDIO_RST    {1 << 27, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_1, PIO_PULLUP} //audio reset
-#define GPIO_FM_RST       {1 << 28, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_1, PIO_PULLUP} //FM36 reset
+#define GPIO_CODEC_RESET          {1 << 26, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_1, PIO_PULLUP} //codec reset
+#define GPIO_AUDIO_RST            {1 << 27, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_1, PIO_PULLUP} //audio reset
+#define GPIO_FM_RST               {1 << 28, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_1, PIO_PULLUP} //FM36 reset
 
                 
 ////////////////////////////////////////////////////////////////////////////////
@@ -390,8 +392,13 @@
 #define LED_P0       2     
 #define LED_P1       3 
 #define LED_P2       4  
-#define LED_P3       5                       
-#define PINS_LEDS    LED1, LED2, GPIO_0_LED, GPIO_1_LED,  GPIO_2_LED, GPIO_3_LED, GPIO_4_LED, GPIO_5_LED, GPIO_6_LED, GPIO_7_LED
+#define LED_P3       5   
+#define LED_P4       6     
+#define LED_P5       7 
+#define LED_P6       8  
+#define LED_P7       9   
+                     
+#define PINS_LEDS    LED1, LED2, GPIO_0_LED, GPIO_1_LED, GPIO_2_LED, GPIO_3_LED, GPIO_4_LED, GPIO_5_LED, GPIO_6_LED, GPIO_7_LED
 
 
 
