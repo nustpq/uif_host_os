@@ -97,7 +97,7 @@ unsigned char Setup_Interface( INTERFACE_CFG *pInterface_Cfg )
         
         case UIF_TYPE_SPI :  
             if( temp <= 1000 && temp >= 10) {  
-                SPI_Init(  temp * 1000 );    
+                SPI_Init(  temp * 1000, pInterface_Cfg->attribute );    
                 APP_TRACE_INFO(("\r\nSPI port is re-initialized to %d kHz \r\n",temp));        
             }  else {
                 APP_TRACE_INFO(("\r\nERROR: SPI speed not support %d kHz\r\n",temp));
@@ -114,6 +114,10 @@ unsigned char Setup_Interface( INTERFACE_CFG *pInterface_Cfg )
         break;
     }
     
+    Global_UIF_Setting[pInterface_Cfg->if_type - 1 ].attribute = pInterface_Cfg->attribute;
+    Global_UIF_Setting[pInterface_Cfg->if_type - 1 ].if_type   = pInterface_Cfg->if_type;
+    Global_UIF_Setting[pInterface_Cfg->if_type - 1 ].speed     = pInterface_Cfg->speed;
+    
     return err ; 
     
     
@@ -125,9 +129,9 @@ unsigned char Write_Single( SINGLE_WRITE single_write )
     
     unsigned char state, err;
     
-//    APP_TRACE_INFO(("\r\nWrite_Single: if_type=%d, dev_addr=0x%02X, reg_addr=0x%04X, reg_addr_len=%d, data=0x%04X, data_len=%d\r\n",\
-//                         single_write.if_type,single_write.dev_addr,single_write.reg_addr,single_write.reg_addr_len,single_write.data,single_write.data_len));
-//   
+    APP_TRACE_INFO(("\r\nWrite_Single: if_type=%d, dev_addr=0x%02X, reg_addr=0x%04X, reg_addr_len=%d, data=0x%04X, data_len=%d\r\n",\
+                         single_write.if_type,single_write.dev_addr,single_write.reg_addr,single_write.reg_addr_len,single_write.data,single_write.data_len));
+   
     
     err = NO_ERR;
     Reverse_Endian((unsigned char *)&single_write.reg_addr, single_write.reg_addr_len );
@@ -160,6 +164,7 @@ unsigned char Write_Single( SINGLE_WRITE single_write )
         break;
         
         case UIF_TYPE_GPIO:
+             err = GPIOPIN_Set( single_write.reg_addr, single_write.data );
 
         break; 
         
@@ -179,9 +184,9 @@ unsigned char Read_Single( SINGLE_READ single_read )
     unsigned char err, state;
     unsigned char *pbuf;
     
-//    APP_TRACE_INFO(("\r\nRead_Single:  if_type=%d, dev_addr=0x%02X, reg_addr=0x%04X, reg_addr_len=%d, data_len=%d\r\n",\
-//                         single_read.if_type,single_read.dev_addr,single_read.reg_addr,single_read.reg_addr_len,single_read.data_len));
-//    
+    APP_TRACE_INFO(("\r\nRead_Single:  if_type=%d, dev_addr=0x%02X, reg_addr=0x%04X, reg_addr_len=%d, data_len=%d\r\n",\
+                         single_read.if_type,single_read.dev_addr,single_read.reg_addr,single_read.reg_addr_len,single_read.data_len));
+    
     err = NO_ERR;
     pbuf = (unsigned char *)Reg_RW_Data;
     
@@ -203,7 +208,7 @@ unsigned char Read_Single( SINGLE_READ single_read )
         break;
         
         case UIF_TYPE_SPI:
-              state =  SPI_WriteBuffer_API( pbuf, 
+              state =  SPI_ReadBuffer_API(  pbuf, 
                                             single_read.data_len );       
               
               if (state != SUCCESS) {
@@ -212,9 +217,9 @@ unsigned char Read_Single( SINGLE_READ single_read )
               } 
         break;
         
-//        case UIF_TYPE_GPIO:
-//
-//        break;
+        case UIF_TYPE_GPIO:
+              err = GPIOPIN_Get( single_read.reg_addr, pbuf );
+        break;
         
         default:
              err = UIF_TYPE_NOT_SUPPORT ;             
@@ -235,15 +240,18 @@ unsigned char Read_Single( SINGLE_READ single_read )
 unsigned char Write_Burst( BURST_WRITE burst_write )
 {  
     
-    unsigned char state, err;
+    unsigned char   state, err;
+    unsigned char   buf[5] ;  
+    unsigned char  *pchar;
     
-    APP_TRACE_INFO(("\r\nWrite_Single: if_type=%d, data_len=%d\r\n",\
-                         burst_write.if_type,burst_write.data_len));
+    APP_TRACE_INFO(("\r\nWrite_Single: if_type=%d, mem_addr=0x%02X:%02X, mem_addr_len=%d,data_len=%d\r\n",\
+                         burst_write.if_type,burst_write.mem_addr_h,burst_write.mem_addr_l,burst_write.mem_addr_len,burst_write.data_len));
    
     
-//    unsigned char *pdata = burst_write.pata;
+//    unsigned char *pdata = (unsigned char *)burst_write.pdata;
+//    APP_TRACE_INFO(("0x%04X ",pdata));
 //    APP_TRACE_INFO(("\r\nBurst Write Data:\r\n"));
-//    for(unsigned int i = 0; i<burst_write.data_len; i++ ) {        
+//    for(unsigned int i = 0; i<(burst_write.data_len); i++ ) {        
 //        APP_TRACE_INFO(("0x%02X ",*pdata++));
 //        if( i%10 == 9 ){
 //            APP_TRACE_INFO(("\r\n"));
@@ -256,22 +264,59 @@ unsigned char Write_Burst( BURST_WRITE burst_write )
     
     switch( burst_write.if_type ) {
         
-//        case UIF_TYPE_I2C:
-//              state =  TWID_Write( single_write.dev_addr>>1, 
-//                                  single_write.reg_addr, 
-//                                  single_write.reg_addr_len, 
-//                                  (unsigned char *)&single_write.data, 
-//                                  single_write.data_len, 
+        case UIF_TYPE_I2C:
+                   if( Global_UIF_Setting[burst_write.if_type - 1 ].attribute == ATTRIBUTE_FOR_IM401_BURST ) {
+                     OSTimeDly(1);            
+                   buf[0] = 0xF0;
+                   buf[1] = burst_write.mem_addr_l & 0xFF;
+                   buf[2] = (burst_write.mem_addr_l >> 8) & 0xFF;
+                   state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 3,  NULL );                 
+                    if ( state != SUCCESS ) {
+                        err = I2C_BUS_ERR;
+                        break; 
+                    }
+                    buf[0] = 0xF1;
+                    buf[1] = burst_write.mem_addr_h & 0xFF;
+                    buf[2] = (burst_write.mem_addr_h >> 8) & 0xFF;
+                    state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 3,  NULL );                  
+                    if ( state != SUCCESS ) {
+                        err = I2C_BUS_ERR;
+                        break; 
+                    }                    
+                    buf[0] = 0xF8;
+                    pchar = burst_write.pdata;
+                    for( unsigned int i =0 ; i <(burst_write.data_len>>2) ; i++ ) {  
+                        buf[1] = *pchar++;
+                        buf[2] = *pchar++;
+                        buf[3] = *pchar++;
+                        buf[4] = *pchar++;
+                        state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 5,  NULL );               
+                        if (state != SUCCESS) {
+                            err = I2C_BUS_ERR;
+                            break;                  
+                     } 
+                     
+                     OSTimeDly(1);             
+                      
+                    }
+            
+              } else {
+//                    state =  TWID_Write( burst_write.dev_addr>>1, 
+//                                  burst_write.mem_addr, 
+//                                  burst_write.mem_addr_len, 
+//                                  burst_write.pdata, 
+//                                  burst_write.data_len, 
 //                                  NULL );       
 //              
-//              if (state != SUCCESS) {
-//                  err = I2C_BUS_ERR;
+//                    if (state != SUCCESS) {
+//                        err = I2C_BUS_ERR;
 //                  
-//              } 
-//        break;
+//                    } 
+              }
+        break;
         
         case UIF_TYPE_SPI:
-              state =  SPI_WriteBuffer_API( burst_write.pata, 
+              state =  SPI_WriteBuffer_API( burst_write.pdata, 
                                             burst_write.data_len );       
               
               if (state != SUCCESS) {
@@ -317,7 +362,7 @@ unsigned char Read_Burst( BURST_READ burst_read )
     //Reverse_Endian((unsigned char *)&single_write.reg_addr, single_write.reg_addr_len );
     //Reverse_Endian( (unsigned char *)&single_write.data, single_write.data_len );
     
-    switch( burst_write.if_type ) {
+    switch( burst_read.if_type ) {
         
 //        case UIF_TYPE_I2C:
 //              state =  TWID_Write( single_write.dev_addr>>1, 
@@ -333,15 +378,15 @@ unsigned char Read_Burst( BURST_READ burst_read )
 //              } 
 //        break;
         
-        case UIF_TYPE_SPI:
-              state =  SPI_WriteBuffer_API( burst_write.pata, 
-                                            burst_write.data_len );       
-              
-              if (state != SUCCESS) {
-                  err = SPI_BUS_ERR;
-                  
-              } 
-        break;
+//        case UIF_TYPE_SPI:
+//              state =  SPI_ReadBuffer_API( burst_read., 
+//                                            burst_read.data_len );       
+//              
+//              if (state != SUCCESS) {
+//                  err = SPI_BUS_ERR;
+//                  
+//              } 
+//        break;
         
 //        case UIF_TYPE_GPIO:
 //

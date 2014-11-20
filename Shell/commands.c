@@ -226,8 +226,8 @@ CPU_INT08U WriteGPIOFunc(CPU_INT08U argc,CPU_CHAR **argv)
     if(argc != 2)  {
         return 1 ;
     }    
-    temp1 =  Str_ParseNbr_Int32U (argv[0],argv, 16) ;
-    temp2 =  Str_ParseNbr_Int32U (argv[1],argv, 16) ;   
+    temp1 =  Str_ParseNbr_Int32U (argv[0],argv, 10) ;
+    temp2 =  Str_ParseNbr_Int32U (argv[1],argv, 10) ;   
       
     if( temp1 <= 32 && temp2 <= 2) {  
       

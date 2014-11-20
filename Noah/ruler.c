@@ -210,12 +210,12 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
         return AUD_CFG_PLAY_CH_ERR ;
     }
 #endif
-#ifndef BOARD_TYPE_UIF
+//#ifndef BOARD_TYPE_UIF
     if ( (pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask != 0) ) {         
          buf[4] += 2; //add 2 channel  
          APP_TRACE_INFO(("Lin 2 channels added...%d\r\n",buf[4])); 
     }
-#endif
+//#endif
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf, sizeof(buf)) ; 
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM);
@@ -1646,7 +1646,7 @@ void AB_POST( void )
 #ifdef BOARD_TYPE_AB03   
     err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0 ); //Lin from SP1.Slot0
 #elif defined BOARD_TYPE_UIF
-    err = Init_FM36_AB03( SAMPLE_RATE_DEF, SAMPLE_LENGTH, 0, 1, 0  ); //Lin from SP1.Slot0
+    err = Init_FM36_AB03( SAMPLE_RATE_DEF, SAMPLE_LENGTH, 2, 1, 0  ); //Lin from SP1.Slot0
 #else 
     err = Init_FM36( SAMPLE_RATE_DEF );
 #endif

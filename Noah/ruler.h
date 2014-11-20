@@ -36,7 +36,7 @@
 
 #define RULER_ID_DEFAULT                  0xFF
 
-#define SAMPLE_LENGTH                     32
+#define SAMPLE_LENGTH                     16
 #define SAMPLE_RATE_DEF                   16000
 #define SET_VOLUME_MUTE                   1000
 //ruler state defines
@@ -230,12 +230,13 @@ typedef struct {
 }SINGLE_READ ;
 
 typedef struct {
-    unsigned int     mem_addr;
-    unsigned int     mem_addr_len;
+    unsigned short   mem_addr_l; 
+    unsigned short   mem_addr_h; 
     unsigned int     data_len;    
-    unsigned char*   pata;
+    unsigned char*   pdata;
     unsigned char    if_type;      
     unsigned char    dev_addr;
+    unsigned char    mem_addr_len;
 }BURST_WRITE ;
 
 typedef struct {
@@ -243,9 +244,10 @@ typedef struct {
     unsigned char    dev_addr;    
     unsigned char    data_len;
     unsigned char    read_data_len;
-    unsigned int     mem_addr;
+    unsigned short   mem_addr_l; 
+    unsigned short   mem_addr_h; 
     unsigned int     mem_addr_len;
-    unsigned char*   pata;
+    unsigned char*   pdata;
     
 }BURST_READ ;
  

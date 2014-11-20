@@ -12,10 +12,12 @@ unsigned char setdir    = 0;
 static Pin pinsGpios[]  = {          
     
     GPIO_0,     GPIO_1,      GPIO_2,     GPIO_3,     GPIO_4,     GPIO_5,     GPIO_6,     GPIO_7,// 0 ~ 7
-    LED1,       LED2, // 8 ~ 9   
-    GPIO_0_LED, GPIO_1_LED,  GPIO_2_LED, GPIO_3_LED, GPIO_4_LED, GPIO_5_LED, GPIO_6_LED, GPIO_7_LED, // 10~17    
-    GPIO_PDMIN_CLK_DIR,  GPIO_MATER_SLAVE_CTR, GPIO_CODEC_RESET, GPIO_AUDIO_RST, GPIO_FM_RST, // 18 ~ 22   
-    BUZZER    // 23
+    GPIO_PDMIN_CLK_DIR,  GPIO_MATER_SLAVE_CTR, GPIO_CODEC_RESET, GPIO_AUDIO_RST, GPIO_FM_RST, // 8 ~ 12   
+    
+    BUZZER,    // 13
+    LED1,       LED2, // 
+    GPIO_0_LED, GPIO_1_LED,  GPIO_2_LED, GPIO_3_LED, GPIO_4_LED, GPIO_5_LED, GPIO_6_LED, GPIO_7_LED // 10~17    
+
                                   
 };
 
@@ -35,7 +37,8 @@ void GPIO_Init(void)
 {  
   
     PIO_Configure( pinsSwitches,  PIO_LISTSIZE(pinsSwitches) );
-    PIO_Configure( pinsGpios,     PIO_LISTSIZE(pinsGpios)     );          
+    PIO_Configure( pinsGpios,     PIO_LISTSIZE(pinsGpios)     );   
+     PIO_Configure( pinsGpios,     PIO_LISTSIZE(pinsGpios)     ); 
     //PIO_InitializeInterrupts( AT91C_AIC_PRIOR_LOWEST );     
     //LED_Configure(LED_DS1);
     //LED_Configure(LED_DS2);
@@ -87,25 +90,67 @@ void GPIODIR_FLOAT( unsigned int pin  ) //
 
 
 //ranfunc for a faster execution 
-void GPIOPIN_Set(unsigned int pin , unsigned int dat)
+unsigned char  GPIOPIN_Set(unsigned int pin , unsigned int dat)
 {  
 
 
-
-
-    pinsGpios[pin].attribute  = PIO_PULLUP ;                   
-    if( dat  & 0x01 ) {
-         PIO_Set(&pinsGpios[pin]);
-              
-    } else {
-        PIO_Clear(&pinsGpios[pin]);
-              
+    if( pin >= PIO_LISTSIZE(pinsGpios) ) {
+        return SET_GPIO_ERR;
+        
     }
-         
+    
+    APP_TRACE_INFO(("\r\nSet GPIO[%d]=%d ", pin, dat));
 
+    switch ( dat ) {
+        
+        case 0: 
+           pinsGpios[pin].attribute  = PIO_PULLUP ;
+           pinsGpios[pin].type       = PIO_OUTPUT_0   ;  
+           //PIO_Clear(&pinsGpios[pin]);
+           PIO_Configure(&pinsGpios[pin], 1);
+        break;
+                
+        case 1: 
+           pinsGpios[pin].attribute  = PIO_PULLUP ;
+           pinsGpios[pin].type       = PIO_OUTPUT_1   ;  
+           //PIO_Set(&pinsGpios[pin]);
+           PIO_Configure(&pinsGpios[pin], 1);
+        break;
+        
+        case 2: 
+            pinsGpios[pin].attribute  = PIO_DEFAULT ; 
+            pinsGpios[pin].type       = PIO_INPUT   ;            
+            PIO_Configure(&pinsGpios[pin], 1);
+        break;
+        
+        default:
+            return SET_GPIO_ERR;
+        break;      
+
+    }
+    
+    return 0;
+    
     
 }
 
+
+unsigned char  GPIOPIN_Get(unsigned int pin , unsigned char *pdat)
+{  
+
+
+    if( pin >= PIO_LISTSIZE(pinsGpios) ) {
+        return SET_GPIO_ERR;
+        
+    }
+       
+    *pdat = PIO_Get(&pinsGpios[pin]);       
+
+    
+    return 0;
+    
+    
+}
 //// additional time delay :  +10us
 //// so, the critical time delay is 11us
 void  __ramfunc GPIOPIN_Set_Session( unsigned int pin , unsigned int dat )
@@ -194,7 +239,6 @@ void  RecordGpio(
   
     */
 }
-
 
 
 
@@ -298,9 +342,9 @@ void Ruler_PowerOnOff( unsigned char switches )
 void Pin_Reset_FM36( void )
 {
 
-    PIO_Clear(&pinsGpios[22]);
+    PIO_Clear(&pinsGpios[12]);
     OSTimeDly(20) ;
-    PIO_Set(&pinsGpios[22]);
+    PIO_Set(&pinsGpios[12]);
     OSTimeDly(50) ;
      
 }
@@ -309,10 +353,20 @@ void Pin_Reset_FM36( void )
 void Pin_Reset_Audio_MCU( void )
 {
 
-    PIO_Clear(&pinsGpios[7]);
-    OSTimeDly(21) ;
-    PIO_Set(&pinsGpios[7]);
-    OSTimeDly(21) ;
+    PIO_Clear(&pinsGpios[11]);
+    OSTimeDly(10) ;
+    PIO_Set(&pinsGpios[11]);
+    OSTimeDly(10) ;
+     
+}
+
+void Pin_Reset_FM1388( void )
+{
+
+    PIO_Clear(&pinsGpios[12]);
+    OSTimeDly(20) ;
+    PIO_Set(&pinsGpios[12]);
+    OSTimeDly(50) ;
      
 }
 
@@ -343,22 +397,22 @@ void Disable_FPGA( void )
 void Init_FPGA( unsigned int channels )
 {
    
-    unsigned int i ;
-    APP_TRACE_DBG(("Init FPGA...[0x%0X] \r\n",channels));
-    PIO_Set(&pinsGpios[20]); //cs 
-    PIO_Set(&pinsGpios[21]); //data 
-    PIO_Set(&pinsGpios[22]); //clock
-    for ( i = 0; i < 32; i++ ) {        
-       PIO_Clear(&pinsGpios[20]); //cs, delay compensation
-       PIO_Clear(&pinsGpios[22]); //clock       
-       if( (channels<<i) & 0x80000000 ) {
-           PIO_Set(&pinsGpios[21]); //data 
-       } else {
-           PIO_Clear(&pinsGpios[21]); //data 
-       }
-       PIO_Set(&pinsGpios[22]); //clock
-    }    
-    PIO_Set(&pinsGpios[20]); //cs 
+//    unsigned int i ;
+//    APP_TRACE_DBG(("Init FPGA...[0x%0X] \r\n",channels));
+//    PIO_Set(&pinsGpios[20]); //cs 
+//    PIO_Set(&pinsGpios[21]); //data 
+//    PIO_Set(&pinsGpios[22]); //clock
+//    for ( i = 0; i < 32; i++ ) {        
+//       PIO_Clear(&pinsGpios[20]); //cs, delay compensation
+//       PIO_Clear(&pinsGpios[22]); //clock       
+//       if( (channels<<i) & 0x80000000 ) {
+//           PIO_Set(&pinsGpios[21]); //data 
+//       } else {
+//           PIO_Clear(&pinsGpios[21]); //data 
+//       }
+//       PIO_Set(&pinsGpios[22]); //clock
+//    }    
+//    PIO_Set(&pinsGpios[20]); //cs 
     
 }
 

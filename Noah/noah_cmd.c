@@ -683,6 +683,8 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             PCCmd.audio_cfg.channels = (CPU_INT08U)temp; 
             temp = emb_get_attr_int(&root, 4, 0);            
             PCCmd.audio_cfg.lin_ch_mask = (CPU_INT08U)temp; 
+            temp = emb_get_attr_int(&root, 5, 0);            
+            PCCmd.audio_cfg.bit_length = (CPU_INT08U)temp; 
             err = Setup_Audio( &PCCmd.audio_cfg );
             Send_GACK(err);
    
@@ -727,7 +729,10 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             PCCmd.interface_cfg.if_type = (CPU_INT08U)temp;             
             temp = emb_get_attr_int(&root, 2, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.interface_cfg.speed = (CPU_INT16U)temp;                    
+            PCCmd.interface_cfg.speed = (CPU_INT16U)temp;   
+            temp = emb_get_attr_int(&root, 3, -1);
+            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.interface_cfg.attribute = (CPU_INT08U)temp; 
             err = Setup_Interface( &PCCmd.interface_cfg );
             Send_GACK(err);
         break ;
@@ -790,16 +795,19 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             PCCmd.burst_write.dev_addr = (CPU_INT08U)temp;              
             temp = emb_get_attr_int(&root, 3, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.burst_write.mem_addr = (CPU_INT32U)temp;             
+            PCCmd.burst_write.mem_addr_l = (CPU_INT16U)temp;    
             temp = emb_get_attr_int(&root, 4, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.burst_write.mem_addr_len = (CPU_INT08U)temp;            
+            PCCmd.burst_write.mem_addr_h = (CPU_INT16U)temp;             
             temp = emb_get_attr_int(&root, 5, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.burst_write.mem_addr_len = (CPU_INT08U)temp;            
+            temp = emb_get_attr_int(&root, 6, -1);
+            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
             PCCmd.burst_write.data_len = (CPU_INT32U)temp;             
-            pBin = emb_get_attr_binary(&root, 6, (int*)&PCCmd.burst_write.data_len);
+            pBin = emb_get_attr_binary(&root, 7, (int*)&PCCmd.burst_write.data_len);
             if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.burst_write.pata = (CPU_INT08U *)pBin;             
+            PCCmd.burst_write.pdata = (CPU_INT08U *)pBin;             
             err = Write_Burst( PCCmd.burst_write );
             Send_GACK(err);
         break ;

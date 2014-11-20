@@ -48,6 +48,7 @@
 #define MMX_ERR                  172u
 #define PROTOCOL_ERR             173u
 
+#define SET_GPIO_ERR             177u
 #define SET_SPI_ERR              178u
 #define SPI_BUS_ERR              179u
 #define I2C_BUS_ERR              180u

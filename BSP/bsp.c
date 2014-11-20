@@ -44,7 +44,7 @@
 /*
 *********************************      Version Declaration       ****************************************
 */
-const CPU_CHAR fw_version[]  = "[FW:H:V0.1]"; //fixed size string
+const CPU_CHAR fw_version[]  = "[FW:H:V0.2]"; //fixed size string
 
 #ifdef  BOARD_TYPE_AB01
 const CPU_CHAR hw_version[]  = "[HW:V1.0]"; 
@@ -226,8 +226,8 @@ void  BSP_Init (void)
     // Configure IIC    
     TWI_Init( TWCK ); //It seems that the TWI will auto desrease SCK if loading increase           
     
-    //Configure SPI for codec10
-    SPI_Init( SPI_CLK ) ; 
+    //Configure SPI in default mode
+    SPI_Init( SPI_CLK, 0 ) ; 
     
     // Init Internal Flash
     FLASHD_Initialize( MCK );
@@ -235,7 +235,7 @@ void  BSP_Init (void)
     
     // Config USART
     UART_Init(PC_UART,     ISR_PC_UART,     115200 );    //To PC        
-    UART_Init(RULER_UART,  ISR_Ruler_UART,  115200 );    //To Ruler 
+    //UART_Init(RULER_UART,  ISR_Ruler_UART,  115200 );    //To Ruler 
     UART_Init(AUDIO_UART,  NULL,            115200 );    //To Audio  
           
     //Config Timer

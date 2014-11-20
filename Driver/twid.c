@@ -226,10 +226,12 @@ unsigned char TWID_Read      (
             state =  TWID_ERROR_BUSY;
             return state ;
         }
+         
         if (num == 1) { // in case of there is only one byte data
             TWI_Stop(pTwi);  //stop must be send before the last byte
             
-        }    
+        }   
+           
         // Update the transfer descriptor
         twid.pTransfer          = pAsync;
         pTransfer               = (AsyncTwi *)pAsync; 
@@ -250,6 +252,7 @@ unsigned char TWID_Read      (
         }
         state          = pTransfer->status ;
         twid.pTransfer = NULL;
+     
         
     }  else {  // Synchronous transfer
 

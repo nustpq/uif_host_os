@@ -36,14 +36,11 @@
 #include "spi.h"
 #include <timer.h>
 
-static const Pin spi_pins[] = { PINS_SPI0, PIN_SPI0_NPCS0 };
+static const Pin spi_pins[] = { PINS_SPI0, PIN_SPI0_NPCS0 } ;
 
-OS_EVENT * SPI_Sem = NULL; //sem for TWI
-
+OS_EVENT * SPI_Sem = NULL ; //sem for TWI
 
 AT91PS_SPI spi_if = AT91C_BASE_SPI0 ;
-
-
 
 //------------------------------------------------------------------------------
 //         Exported functions
@@ -141,7 +138,6 @@ unsigned char SPI_WriteBuffer(AT91S_SPI *spi,
 #if !defined(CHIP_SPI_DMA)
     // Check if first bank is free
     if (spi->SPI_TCR == 0) {
-
         spi->SPI_TPR = (unsigned int) buffer;
         spi->SPI_TCR = length;
         spi->SPI_PTCR = AT91C_PDC_TXTEN;
@@ -149,7 +145,6 @@ unsigned char SPI_WriteBuffer(AT91S_SPI *spi,
     }
     // Check if second bank is free
     else if (spi->SPI_TNCR == 0) {
-
         spi->SPI_TNPR = (unsigned int) buffer;
         spi->SPI_TNCR = length;
         return 1;
@@ -166,7 +161,6 @@ unsigned char SPI_WriteBuffer(AT91S_SPI *spi,
 //------------------------------------------------------------------------------
 unsigned char SPI_IsWriteFinished(AT91S_SPI *pSpi)
 {
-   //APP_TRACE_INFO(("\r\n SPI_SR:  0x%X ",pSpi->SPI_SR));
    //   return ((pSpi->SPI_SR & AT91C_SPI_TXEMPTY) != 0);
    return ((pSpi->SPI_SR & AT91C_SPI_ENDTX) != 0);
 }
@@ -235,10 +229,11 @@ unsigned char SPI_ReadBuffer(AT91S_SPI *spi,
     return 0;
 }
 
+#define SPI_TIME_OUT  2000  //2000ms time out
 
 //return 0 if write succeed
 //return 1 if write failed
-unsigned char SPI_WriteBuffer_API(  void *buffer,  unsigned int length)
+unsigned char SPI_WriteBuffer_API(  void *buffer,  unsigned int length )
 {
     unsigned char state;
     unsigned char err;
@@ -252,7 +247,7 @@ unsigned char SPI_WriteBuffer_API(  void *buffer,  unsigned int length)
     if( state == 1 ) {
         while( ! SPI_IsWriteFinished( spi_if ) ) {
             OSTimeDly(1);
-            if( couter++ > 2000 ) { //timeout : 2s
+            if( couter++ > SPI_TIME_OUT ) { //timeout : 2s
                 state = 0 ;
                 break;
             }
@@ -268,24 +263,22 @@ unsigned char SPI_WriteBuffer_API(  void *buffer,  unsigned int length)
 
 //return 0 if read succeed
 //return 1 if read failed
-unsigned char SPI_ReadBuffer_API(  void *buffer,  unsigned int length)
+unsigned char SPI_ReadBuffer_API(  void *buffer,  unsigned int length )
 {
     unsigned char state;
     unsigned char err;
     unsigned int  couter = 0 ;
     
-    OSSemPend( SPI_Sem, 0, &err );
-    
+    OSSemPend( SPI_Sem, 0, &err );    
 
     state = SPI_ReadBuffer( spi_if, buffer, length );
     if( state == 1 ) {
         while( ! SPI_IsReadFinished( spi_if ) ) {
             OSTimeDly(1);
-            if( couter++ > 2000 ) { //timeout : 2s
+            if( couter++ > SPI_TIME_OUT ) { //timeout : 2s
                 state = 0 ;
                 break;
-            }
-            
+            }            
         }        
     }    
     
@@ -295,67 +288,17 @@ unsigned char SPI_ReadBuffer_API(  void *buffer,  unsigned int length)
     
 }
 
-//
-////return 0 if write succeed
-////return 1 if write failed
-//unsigned char SPI_WriteBuffer_API(  void *buffer,  unsigned int length)
-//{
-//    unsigned char state = 0 ;
-//    unsigned char err;
-//    unsigned int  counter = 0 ;
-//    
-//    OSSemPend( SPI_Sem, 0, &err );     
-//
-//    while( SPI_WriteBuffer( spi_if, buffer, length ) == 0 ) {
-//            OSTimeDly(1);
-//            if( counter++ > 10 ) { //timeout : 10ms
-//                state = 1 ;
-//                break;
-//            }
-//    }        
-//           
-//    OSSemPost( SPI_Sem ); 
-//    APP_TRACE_INFO(("\r\nSPI W state:%d, counter:%d ",state,counter));
-//    return state ;
-//    
-//}
-//
-//
-////return 0 if read succeed
-////return 1 if read failed
-//unsigned char SPI_ReadBuffer_API(  void *buffer,  unsigned int length)
-//{
-//    unsigned char state = 0 ;
-//    unsigned char err;
-//    unsigned int  counter = 0 ;
-//    
-//    OSSemPend( SPI_Sem, 0, &err );     
-//
-//    while( SPI_ReadBuffer( spi_if, buffer, length ) == 0 ) {
-//            OSTimeDly(1);
-//            if( counter++ > 10 ) { //timeout : 10ms
-//                state = 1 ;
-//                break;
-//            }
-//    }        
-//           
-//    OSSemPost( SPI_Sem ); 
-//    APP_TRACE_INFO(("\r\nSPI R state:%d, counter:%d ",state,counter));
-//    return state ;
-//    
-//}
-//
 
-void SPI_Initialize( AT91S_SPI *spi, unsigned int npcs, unsigned int spi_clk, unsigned int mck )
+void SPI_Initialize( AT91S_SPI *spi, unsigned int npcs, unsigned int spi_clk, unsigned int mclk, unsigned int mode )
 {
-    unsigned int clk ;
+   
     unsigned char err;
-    
-    clk = mck / spi_clk ;    
-    if( clk>255 ){      
-        clk = 255;
-    }
-    
+    unsigned int  clk_div ;
+     
+    clk_div = mclk / spi_clk ;    
+    if( clk_div > 255 ){      
+        clk_div = 255;
+    }    
     //ASSERT(clk>0, "-F- Invalid SPI clock parameters\n\r");
     
     if( NULL == SPI_Sem ) {
@@ -370,20 +313,45 @@ void SPI_Initialize( AT91S_SPI *spi, unsigned int npcs, unsigned int spi_clk, un
          
     PIO_Configure(spi_pins, PIO_LISTSIZE(spi_pins) ); 
    
-    SPI_Configure(spi, AT91C_ID_SPI0,  AT91C_SPI_MSTR | AT91C_SPI_MODFDIS |(0x0E << 16)  )  ;     
-    
+    SPI_Configure(spi, AT91C_ID_SPI0,  AT91C_SPI_MSTR | AT91C_SPI_MODFDIS |(0x0E << 16)  )  ;        
 
-    SPI_ConfigureNPCS(spi, npcs,  AT91C_SPI_CSAAT|AT91C_SPI_BITS_8|AT91C_SPI_CPOL|(clk << 8)|(200<16) )  ;
+    SPI_ConfigureNPCS(spi, npcs,  mode | (clk_div << 8) | (200<16) )  ; //delay after NPCS active before send data: MCLK/200
 
     SPI_Enable(spi);   
      
    
 } 
 
-void SPI_Init(  unsigned int spi_clk )
+void SPI_Init(  unsigned int spi_clk, unsigned char format ) 
 {
     
-   SPI_Initialize( spi_if, 0, spi_clk, MCK ) ;   // Configure SPI   
+   unsigned int mode;
+ 
+   switch( format ) {
+       
+       case 1 :  //keep SPCK High, Rising edge latch data
+            mode = AT91C_SPI_CSAAT | AT91C_SPI_BITS_8 | AT91C_SPI_CPOL; 
+       break;
+       
+       case 2 :  //keep SPCK High, Falling edge latch data
+            mode = AT91C_SPI_CSAAT | AT91C_SPI_BITS_8 | AT91C_SPI_CPOL | AT91C_SPI_NCPHA; 
+       break; 
+       
+       case 3 :  //keep SPCK Low, Rising edge latch data
+            mode = AT91C_SPI_CSAAT | AT91C_SPI_BITS_8 | AT91C_SPI_NCPHA; 
+       break;  
+       
+       case 4 :  //keep SPCK Low,  Falling edge latch data
+            mode = AT91C_SPI_CSAAT | AT91C_SPI_BITS_8 ; 
+       break;   
+       
+       default:  //keep SPCK High, Rising edge latch data
+            mode = AT91C_SPI_CSAAT | AT91C_SPI_BITS_8 | AT91C_SPI_CPOL; 
+       break;
+       
+   }
+   
+   SPI_Initialize( spi_if, 0, spi_clk, MCK, mode ) ;   // Configure SPI   
   
 }
 

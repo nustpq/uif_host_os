@@ -18,6 +18,10 @@
 #define   UIF_TYPE_SPI     2
 #define   UIF_TYPE_GPIO    3
 
+
+#define   ATTRIBUTE_FOR_IM401_BURST   41
+
+
 extern unsigned char   Reg_RW_Data[];
 
 extern void Reverse_Endian( unsigned char *pdata, unsigned char size ) ;

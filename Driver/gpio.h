@@ -31,7 +31,8 @@ extern void GPIO_Init(void);
 extern void GPIODIR_FLOAT( unsigned int pin  ) ;
 
 extern void GPIODIR_Set(unsigned int pin ) ;
-extern void GPIOPIN_Set(unsigned int pin , unsigned int dat) ;
+extern unsigned char GPIOPIN_Set(unsigned int pin , unsigned int dat) ;
+extern unsigned char  GPIOPIN_Get(unsigned int pin , unsigned char *pdat);
 extern void GPIOPIN_Set_Session(unsigned int pin , unsigned int dat) ;
 
 extern void Ruler_PowerOnOff( unsigned char switches ) ;

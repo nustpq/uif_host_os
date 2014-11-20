@@ -459,7 +459,7 @@ unsigned char CODEC_Set_Volume( unsigned int vol_spk, unsigned int vol_lin )
     
     return err;
     */
-    return CODEC_FUNC_NOT_SUPPORT;
+    return 0;
     
 }
 
@@ -681,6 +681,7 @@ unsigned char Init_CODEC( unsigned int sr, unsigned char sample_length )
     
     if( sample_length == 16 ) {
         mode = 1;
+        //mode = 0; //for iM401
     } else {//if(sample_length == 32 ) {
         mode = 2;
     } //else {
