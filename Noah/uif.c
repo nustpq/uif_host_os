@@ -294,10 +294,8 @@ unsigned char Write_Burst( BURST_WRITE burst_write )
                         if (state != SUCCESS) {
                             err = I2C_BUS_ERR;
                             break;                  
-                     } 
-                     
-                     //OSTimeDly(1);             
-                      
+                     }                      
+                     //OSTimeDly(1); 
                     }
             
               } else {

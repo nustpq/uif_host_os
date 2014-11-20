@@ -197,7 +197,7 @@ void  App_TaskUserIF (void *p_arg)
 //                                Global_Mic_Mask[ruler_id]    = 0 ; 
                                 if( ruler_id == 0 ) {
                                     iM401_Bypass();
-                                    OSTimeDly(3000);
+                                    OSTimeDly(5000);
                                     iM401_Standby();                                    
                                 }
                                 
@@ -209,11 +209,11 @@ void  App_TaskUserIF (void *p_arg)
                 break;  
             }  
             Buzzer_OnOff(1); //buzzer on   
-            OSTimeDly(10);  
+            OSTimeDly(5);  
             Buzzer_OnOff(0); //buzzer off
-            OSTimeDly(30);
+            OSTimeDly(20);
             Buzzer_OnOff(1); //buzzer on   
-            OSTimeDly(10);  
+            OSTimeDly(5);  
             Buzzer_OnOff(0); //buzzer off 
         }
     }

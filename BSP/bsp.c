@@ -44,7 +44,7 @@
 /*
 *********************************      Version Declaration       ****************************************
 */
-const CPU_CHAR fw_version[]  = "[FW:H:V0.30]"; //fixed size string
+const CPU_CHAR fw_version[]  = "[FW:H:V0.31]"; //fixed size string
 
 #ifdef  BOARD_TYPE_AB01
 const CPU_CHAR hw_version[]  = "[HW:V1.0]"; 

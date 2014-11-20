@@ -217,7 +217,7 @@ unsigned char TWID_Read      (
     unsigned char err;    
     unsigned char state; 
         
-    pAsync    = &twi_async; //force use async
+    //pAsync    = &twi_async; //force use async
     pTwi      = twid.pTwi; 
     pTransfer = (AsyncTwi *)twid.pTransfer; 
     state     = TWID_NO_ERROR;
@@ -268,8 +268,12 @@ unsigned char TWID_Read      (
         OSSchedUnlock();
         
     }  else {  // Synchronous transfer
-
+        
+#if OS_CRITICAL_METHOD == 3u                     /* Allocate storage for CPU status register           */
+    OS_CPU_SR  cpu_sr = 0u;
+#endif 
         OSSemPend( TWI_Sem_lock, 0, &err );  
+        OS_ENTER_CRITICAL();
         // Set STOP signal if only one byte is sent
         if (num == 1) {
             TWI_Stop(pTwi);
@@ -287,13 +291,15 @@ unsigned char TWID_Read      (
             while( !TWI_ByteReceived(pTwi) && (++timeout<TWITIMEOUTMAX) );
             if (timeout == TWITIMEOUTMAX) {
                 //TRACE_ERROR("TWID Timeout BR\n\r");
+                 OS_EXIT_CRITICAL();
                  OSSemPost( TWI_Sem_lock );
-                 state =  TWID_ERROR_TIMEOUT;
+                 state =  TWID_ERROR_TIMEOUT;                 
                  return state;
             }
             *pData++ = TWI_ReadByte(pTwi);
             num--;
         }
+        OS_EXIT_CRITICAL();
         // Wait for transfer to be complete
         timeout = 0;
         while( !TWI_TransferComplete(pTwi) && (++timeout < TWITIMEOUTMAX) );
@@ -332,7 +338,7 @@ unsigned char TWID_Write    (
     unsigned char err;     
     unsigned char state; 
         
-    pAsync    = &twi_async; //force use async    
+    //pAsync    = &twi_async; //force use async    
     pTwi      = twid.pTwi; 
     pTransfer = (AsyncTwi *)twid.pTransfer;      
     state     = TWID_NO_ERROR;
@@ -377,9 +383,14 @@ unsigned char TWID_Write    (
         
         OSSchedUnlock();
         
-    } else {   // Synchronous transfer   
-
+    } else {   // Synchronous transfer  
+        
+#if OS_CRITICAL_METHOD == 3u                     /* Allocate storage for CPU status register           */
+    OS_CPU_SR  cpu_sr = 0u;
+#endif 
+        
         OSSemPend( TWI_Sem_lock, 0, &err ); 
+        OS_ENTER_CRITICAL();
         // Start write
         TWI_StartWrite(pTwi, address, iaddress, isize, *pData++);
         num--;
@@ -389,6 +400,7 @@ unsigned char TWID_Write    (
             timeout = 0;
             while( !TWI_ByteSent(pTwi) && (++timeout<TWITIMEOUTMAX) );
             if (timeout == TWITIMEOUTMAX) {
+                 OS_EXIT_CRITICAL();
                 //TRACE_ERROR("TWID Timeout BS\n\r");             
                  state =  TWID_ERROR_TIMEOUT;
                  return state;
@@ -396,7 +408,7 @@ unsigned char TWID_Write    (
             TWI_WriteByte(pTwi, *pData++);
             num--;
         }
-
+        OS_EXIT_CRITICAL();
         // Wait for actual end of transfer
         timeout = 0;
 
