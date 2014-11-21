@@ -63,9 +63,10 @@ void  App_TaskJoy (void *p_arg)
     CPU_INT32U   i ;
     
     //avoid a fake trigger after POR
-    switch_value_prev      =  Get_Switches()    & 0x3F; 
-    ruler_port_value_prev  =  Get_Port_Detect() & 0xFF;
-    
+//    switch_value_prev      =  Get_Switches()    & 0x3F; 
+    switch_value_prev      =  0x3F;  //make sure check switch 1st  
+    ruler_port_value_prev  =  Get_Port_Detect() & 0xFF;    
+   
     //flash_test(); //debug use
     
     while ( DEF_TRUE ) {     /* Task body, always written as an infinite loop.           */   
@@ -99,10 +100,9 @@ void  App_TaskJoy (void *p_arg)
             
         }
            
-        switch_value = Get_Switches() & 0x3F; //mask 
-        //APP_TRACE_INFO(("Get_Switches[0x%x].\r\n", switch_value )); 
+        switch_value = Get_Switches() & 0x3F; //mask 0~5      
         if( switch_value != switch_value_prev ) {  
-            OSTimeDly(100); 
+            OSTimeDly(300); 
             if( switch_value == Get_Switches() & 0x3F ) { //jitter immune                         
                 data = switch_value ^ switch_value_prev ;   
                 switch_value_prev = switch_value ;
@@ -116,8 +116,7 @@ void  App_TaskJoy (void *p_arg)
             }
         }
         
-        ruler_port_value = Get_Port_Detect() & 0xFF; //mask  0~7
-        //APP_TRACE_INFO(("Get_Port_Detect[0x%x].\r\n", ruler_port_value )); 
+        ruler_port_value = Get_Port_Detect() & 0xFF; //mask  0~7        
         if( ruler_port_value != ruler_port_value_prev ) {
             //OSTimeDly(100); //for gpio detect, no need delay
             if( ruler_port_value == Get_Port_Detect() & 0xFF ) {  //jitter immune

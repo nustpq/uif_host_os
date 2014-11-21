@@ -60,14 +60,17 @@ void  App_TaskUserIF (void *p_arg)
     CPU_INT08U   err;
     CPU_INT32U   key_state; 
     CPU_INT08U   ruler_id;
-
+    CPU_INT08U   iM401_Ctrl_Enable;
+  
     (void)p_arg;    
     
     OSTimeDly(500); //wait for other tasks be ready , and time for power stable for ruler  
     Head_Info(); //Send header 
     //Ruler_Power_Switch(1);
-    Init_Global_Var();    
+    Init_Global_Var(); 
+    iM401_Ctrl_Enable = 1;
     AB_POST();
+    
 
 #ifndef BOARD_TYPE_AB01  
     APP_TRACE_INFO(( "\r\nWARNING: NOT AB01, NO MCU CRT UART SWITCH\r\n"));
@@ -91,6 +94,43 @@ void  App_TaskUserIF (void *p_arg)
                                    (key_state>>2)&(0x01),(key_state>>3)&(0x01),(key_state>>4)&(0x01),(key_state>>5)&(0x01) )); 
                     /**********************************************************************/
                     //To do something to do with Switch selection...                    
+                    
+
+                    
+                    // Switch 'M3' used to control Buzzer mute:
+                    //         0: ON :  Buzzer muted
+                    //         1: OFF:  Buzzer unmuted
+                    if( (key_state>>(8 + 0)) & 0x01) {  //check if SW1 switch status changed                         
+                        if( ((key_state>>0)& 0x01 ) == 0 ) { 
+                            BUZZER_MUTE =  1;   //mute buzzer                         
+                        } else {                                                 
+                            BUZZER_MUTE =  0;   //unmute buzzer
+                        }
+                    }
+                    
+                    // Switch 'M2' used to control iM401:
+                    //         0: ON :  No CMD to iM401
+                    //         1: OFF:  send iM401 by pass/standby CMD on IRQ 
+                    if( (key_state>>(8 + 1)) & 0x01) {  //check if SW1 switch status changed                         
+                        if( ((key_state>>1)& 0x01 ) == 0 ) { 
+                            iM401_Ctrl_Enable =  0;   //no CMD                         
+                        } else {                                                 
+                            iM401_Ctrl_Enable =  1;   //send CMD
+                        }
+                    }
+                    // Switch 'SW1' used to control CODEC LOUT PGA Gain:
+                    //         0: ON :  24dB attenuated signal for Phone MIC input
+                    //         1: OFF:  Normal signal for ACQUA
+                    if( (key_state>>(8 + 4)) & 0x01) {  //check if SW1 switch status changed                         
+                          if( ((key_state>>4)& 0x01 ) == 0 ) {                                
+                              err = CODEC_LOUT_Small_Gain_En( true ) ;  //enable 24dB attenuated signal for Phone Mic                                               
+                          } else {                                                 
+                              err = CODEC_LOUT_Small_Gain_En( false ) ; //normal signal, no attenuation                              
+                          }
+                          if( OS_ERR_NONE != err ) {
+                              APP_TRACE_INFO(("ERR: Set CODEC_LOUT_Small_Gain_En err! [%d]\r\n",err));
+                          }
+                    } 
                     // Switch 'SW0' used to control DEBUG port:
                     //         0: ON :  UART1 used as debug port
                     //         1: OFF:  DBG UART used as debug port
@@ -99,7 +139,7 @@ void  App_TaskUserIF (void *p_arg)
                         OSSemSet (Bsp_Ser_Tx_Sem_lock, 1,  &err) ;
                         OSSemSet (Bsp_Ser_Rx_Sem_lock, 1,  &err) ;
                         Task_ReCreate_Shell();  
-                        if( ((key_state>>1)& 0x01 ) == 0 ) { //debug to UART1  
+                        if( ((key_state>>5)& 0x01 ) == 0 ) { //debug to UART1  
                             Debug_COM_Sel = 1 ;
                             BSP_Ser_Init(115200);  
                         } else {                             //debug to DBG_UART                      
@@ -107,29 +147,6 @@ void  App_TaskUserIF (void *p_arg)
                             UART_Init(PC_UART, ISR_PC_UART, 115200 );    //To PC  ? Sem recreat issue
                         }
                     } 
-//                    // Switch 'SW1' used to control Buzzer mute:
-//                    //         0: ON :  Buzzer muted
-//                    //         1: OFF:  Buzzer unmuted
-                    if( (key_state>>(8 + 0)) & 0x01) {  //check if SW1 switch status changed                         
-                        if( ((key_state>>0)& 0x01 ) == 0 ) { 
-                            BUZZER_MUTE =  1;   //mute buzzer                         
-                        } else {                                                 
-                            BUZZER_MUTE =  0;   //unmute buzzer
-                        }
-                    } 
-                      // Switch 'SW1' used to control CODEC LOUT PGA Gain:
-                      //         0: ON :  24dB attenuated signal for Phone MIC input
-                      //         1: OFF:  Normal signal for ACQUA
-                      if( (key_state>>(8 + 4)) & 0x01) {  //check if SW1 switch status changed                         
-                          if( ((key_state>>0)& 0x01 ) == 0 ) {                                
-                              err = CODEC_LOUT_Small_Gain_En( true ) ;  //enable 24dB attenuated signal for Phone Mic                                               
-                          } else {                                                 
-                              err = CODEC_LOUT_Small_Gain_En( false ) ; //normal signal, no attenuation                              
-                          }
-                          if( OS_ERR_NONE != err ) {
-                              APP_TRACE_INFO(("ERR: Set CODEC_LOUT_Small_Gain_En err! [%d]\r\n",err));
-                          }
-                      } 
                 break;
                 
                 case MSG_TYPE_PORT_DET :   
@@ -195,9 +212,9 @@ void  App_TaskUserIF (void *p_arg)
                                 APP_TRACE_INFO(("GPIO[%d] is High Level.\r\n", ruler_id ));                                 
 //                                Global_Ruler_State[ruler_id] = RULER_STATE_DETACHED ;
 //                                Global_Mic_Mask[ruler_id]    = 0 ; 
-                                if( ruler_id == 0 ) {
+                                if( (ruler_id == 0) && (iM401_Ctrl_Enable == 1) ) {
                                     iM401_Bypass();
-                                    OSTimeDly(5000);
+                                    OSTimeDly(3000);
                                     iM401_Standby();                                    
                                 }
                                 
