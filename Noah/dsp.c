@@ -170,19 +170,22 @@ static unsigned short int fm36_para_table_3[][2] =
   
   ///////////////// multi-function port  //////////////// 
   {0x2264, 0x01FC}, //use SP0 SP1 PDMI_012 PDMO_012
-
   
   //////////////////  PDM CLOCK SETTING   /////////////////
   {0x2265, 0x0000}, //ADC clock source, 0: ADC =PLL, 2: ADC=DCA, 3: ADC=1/2 DAC 
   //{0x2266, 0x0013}, //3.072Hz
   {0x2266, 0x001B}, //2.048M
-  // {0x2266, 0x0033},
+  //{0x2266, 0x0033},//1.024
+
+  //ADC
   //{0x2267, 0xBB80}, //3.072Hz
-  {0x2267, 0x7d00}, //2.048M 
-  // {0x2267, 0x3e80},
+  {0x2267, 0x7d00}, //2.048M //clock to iM401
+  //{0x2267, 0x3e80},//1.024
+
+   //DAC
    //{0x226A, 0xBB80}, //3.072Hz
-  {0x226A, 0x7d00}, //2.048M 
-  //  {0x226A, 0x3e80},
+   //{0x226A, 0x7d00}, //2.048M 
+  {0x226A, 0x3e80},//1.024   //clock from iM401
    
    ///////////////// SP1 Format  //////////////////
    //reset in Config_SPx_Format()
