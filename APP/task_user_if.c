@@ -115,7 +115,7 @@ void  App_TaskUserIF (void *p_arg)
                         if( ((key_state>>1)& 0x01 ) == 0 ) { 
                             iM401_Ctrl_Enable =  0;   //no CMD                         
                         } else {                                                 
-                            iM401_Ctrl_Enable =  1;   //send CMD
+                            iM401_Ctrl_Enable =  1;   //send CMD                         
                         }
                     }
                     // Switch 'SW1' used to control CODEC LOUT PGA Gain:
@@ -213,6 +213,7 @@ void  App_TaskUserIF (void *p_arg)
 //                                Global_Ruler_State[ruler_id] = RULER_STATE_DETACHED ;
 //                                Global_Mic_Mask[ruler_id]    = 0 ; 
                                 if( (ruler_id == 0) && (iM401_Ctrl_Enable == 1) ) {
+                                    OSTimeDly(500);
                                     iM401_Bypass();
                                     OSTimeDly(3000);
                                     iM401_Standby();                                    

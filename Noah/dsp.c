@@ -505,7 +505,7 @@ static unsigned char Config_SR( unsigned short sr )
 * Note(s)     : None.
 *********************************************************************************************************
 */
-unsigned char Init_FM36_AB03( unsigned short sr, unsigned char bit_length, unsigned char mic_num, unsigned char lin_sp_index, unsigned char start_slot_index )
+unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned char lin_sp_index, unsigned char start_slot_index, unsigned char bit_length )
 {
     unsigned int   i;
     unsigned short temp, temp2 ;
@@ -579,10 +579,10 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char bit_length, unsig
         val  = fm36_para_table_3[i][1];
         
         if( addr == 0x22FB ) {  //if run chip, do sth before            
-//            err = Config_SP0_Out( mic_num );
-//            if( OS_ERR_NONE != err ) {
-//                return err ;
-//            }
+            err = Config_SP0_Out( mic_num );
+            if( OS_ERR_NONE != err ) {
+                return err ;
+            }
             err = Config_Lin( lin_sp_index, start_slot_index );
             if( OS_ERR_NONE != err ) {
                 return err ;

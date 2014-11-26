@@ -154,7 +154,7 @@ void Check_UART_Mixer_Ready( void )
 unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
 {
     unsigned char err; 
-    //unsigned char mic_num; 
+    unsigned char mic_num; 
     unsigned char data  = 0xFF;
     unsigned char buf[] = { 
         CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_SET_AUDIO_CFG,\
@@ -164,9 +164,9 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
     
     //APP_TRACE_INFO(("Setup_Audio [%s]:[%d SR]:[%d CH]: %s\r\n",(pAudioCfg->type == 0) ? "REC " : "PLAY", pAudioCfg->sr, pAudioCfg->channels,((pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask == 0)) ? "LIN Disabled" : "LIN Enabled"));
     if( pAudioCfg->type == 0 ) {
-        APP_TRACE_INFO(("Setup_Audio [REC ]:[%d SR]:[%d CH]:[%d-Bit]\r\n", pAudioCfg->sr, pAudioCfg->channels, pAudioCfg->bit_length));
+        APP_TRACE_INFO(("\r\nSetup_Audio [REC ]:[%d SR]:[%d CH]:[%d-Bit]", pAudioCfg->sr, pAudioCfg->channels, pAudioCfg->bit_length));
     } else {
-        APP_TRACE_INFO(("Setup_Audio [PLAY]:[%d SR]:[%d CH]:[%d-Bit]\r\n", pAudioCfg->sr, pAudioCfg->channels, pAudioCfg->bit_length ));
+        APP_TRACE_INFO(("\r\nSetup_Audio [PLAY]:[%d SR]:[%d CH]:[%d-Bit]", pAudioCfg->sr, pAudioCfg->channels, pAudioCfg->bit_length ));
     }
     
     err = Check_SR_Support( pAudioCfg->sr );
@@ -174,7 +174,7 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
         APP_TRACE_INFO(("\r\nSetup_Audio ERROR: Sample rate NOT support!\r\n")); 
         return err;
     }        
-  
+        
 //    mic_num = Check_Actived_Mic_Number();
 //    if( mic_num > 6 ) {
 //        APP_TRACE_INFO(("\r\nERROR: Check_Actived_Mic_Number = %d > 6\r\n",mic_num));
@@ -185,7 +185,7 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
 //        APP_TRACE_INFO(("WARN:(Setup_Audio Rec)pAudioCfg->channels(%d) !=  Active MICs Num(%d)\r\n",pAudioCfg->channels,mic_num));
 //        buf[4] = mic_num;
 //        return AUD_CFG_MIC_NUM_DISMATCH_ERR;
-//    }
+//    } 
     //check channel num    
     if( (pAudioCfg->type == 1) && (pAudioCfg->channels == 0) ) {
         APP_TRACE_INFO(("WARN:(Setup_Audio Play)pAudioCfg->channels =  0\r\n" ));        
@@ -210,12 +210,21 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
         return AUD_CFG_PLAY_CH_ERR ;
     }
 #endif
-//#ifndef BOARD_TYPE_UIF
+    
+#ifdef BOARD_TYPE_UIF
+    if( pAudioCfg->type == 0) {
+         mic_num = pAudioCfg->channels ;
+         Global_Mic_Mask[0] = mic_num;
+    } else {
+         mic_num = Global_Mic_Mask[0]; //save mic num to ruler0
+    }
+#else    
     if ( (pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask != 0) ) {         
          buf[4] += 2; //add 2 channel  
          APP_TRACE_INFO(("Lin 2 channels added...%d\r\n",buf[4])); 
     }
-//#endif
+#endif
+    
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf, sizeof(buf)) ; 
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM);
@@ -234,7 +243,7 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
 #ifdef BOARD_TYPE_AB03  
     err = Init_FM36_AB03( pAudioCfg->sr, mic_num, 1, 0 ); //Lin from SP1_RX, slot0~1
 #elif defined BOARD_TYPE_UIF
-    err = Init_FM36_AB03( pAudioCfg->sr,pAudioCfg->bit_length, pAudioCfg->channels, 1, 0 ); //Lin from SP1_RX, slot0~1
+    err = Init_FM36_AB03( pAudioCfg->sr, mic_num, 1, 0, pAudioCfg->bit_length ); //Lin from SP1_RX, slot0~1
 #else
     err = ReInit_FM36( pAudioCfg->sr ); 
 #endif
@@ -276,7 +285,7 @@ unsigned char Start_Audio( START_AUDIO start_audio )
 #if OS_CRITICAL_METHOD == 3u
     OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
 #endif 
-    APP_TRACE_INFO(("Start_Audio : type = [%d], padding = [0x%X]\r\n", start_audio.type, start_audio.padding));
+    APP_TRACE_INFO(("\r\nStart_Audio : type = [%d], padding = [0x%X]\r\n", start_audio.type, start_audio.padding));
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf,  sizeof(buf) );    
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM );  
@@ -316,14 +325,14 @@ unsigned char Start_Audio( START_AUDIO start_audio )
 unsigned char Stop_Audio( void )
 {  
     unsigned char err   = 0xFF;  
-    unsigned char data  = 0xFF; 
+    unsigned char data  = 0xFF;
     unsigned char ruler_id;     
     unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_STOP_AUDIO };
     
 #if OS_CRITICAL_METHOD == 3u
     OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
 #endif 
-    APP_TRACE_INFO(("Stop_Audio\r\n"));
+    APP_TRACE_INFO(("\r\nStop_Audio\r\n"));
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM); 
@@ -1407,6 +1416,10 @@ unsigned char Toggle_Mic(  TOGGLE_MIC *pdata )
     unsigned int   mic_mask;  
     unsigned int   fpga_mask;
     
+#ifdef BOARD_TYPE_UIF 
+    return 0;
+#else
+    
 #if OS_CRITICAL_METHOD == 3u
     OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
 #endif 
@@ -1443,7 +1456,8 @@ unsigned char Toggle_Mic(  TOGGLE_MIC *pdata )
        fpga_mask = 0x3F << ((pdata->ruler_id)<<3);
     }
     Init_FPGA(fpga_mask);
-    return err;  
+    return err; 
+#endif
 }
 
 
@@ -1646,7 +1660,7 @@ void AB_POST( void )
 #ifdef BOARD_TYPE_AB03   
     err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0 ); //Lin from SP1.Slot0
 #elif defined BOARD_TYPE_UIF
-    err = Init_FM36_AB03( SAMPLE_RATE_DEF, SAMPLE_LENGTH, 2, 1, 0  ); //Lin from SP1.Slot0
+    err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0, SAMPLE_LENGTH  ); //Lin from SP1.Slot0
 #else 
     err = Init_FM36( SAMPLE_RATE_DEF );
 #endif

@@ -77,7 +77,7 @@ unsigned char Setup_Interface( INTERFACE_CFG *pInterface_Cfg )
     unsigned char err; 
     unsigned int  temp;
     
-    APP_TRACE_INFO(("\r\nSetup_Interface: if_type=%d, speed=%dkHz, attribute=0x%X\r\n",\
+    APP_TRACE_INFO(("\r\nSetup_Interface: if_type=%d, speed=%dkHz, attribute=0x%X ",\
                          pInterface_Cfg->if_type,pInterface_Cfg->speed, pInterface_Cfg->attribute));
     
     err = NULL;
@@ -129,7 +129,7 @@ unsigned char Write_Single( SINGLE_WRITE single_write )
     
     unsigned char state, err;
     
-    APP_TRACE_INFO(("\r\nWrite_Single: if_type=%d, dev_addr=0x%02X, reg_addr=0x%04X, reg_addr_len=%d, data=0x%04X, data_len=%d\r\n",\
+    APP_TRACE_INFO(("\r\nWrite_Single: if_type=%d, dev_addr=0x%02X, reg_addr=0x%04X, reg_addr_len=%d, data=0x%04X, data_len=%d ",\
                          single_write.if_type,single_write.dev_addr,single_write.reg_addr,single_write.reg_addr_len,single_write.data,single_write.data_len));
    
     
@@ -184,7 +184,7 @@ unsigned char Read_Single( SINGLE_READ single_read )
     unsigned char err, state;
     unsigned char *pbuf;
     
-    APP_TRACE_INFO(("\r\nRead_Single:  if_type=%d, dev_addr=0x%02X, reg_addr=0x%04X, reg_addr_len=%d, data_len=%d\r\n",\
+    APP_TRACE_INFO(("\r\nRead_Single:  if_type=%d, dev_addr=0x%02X, reg_addr=0x%04X, reg_addr_len=%d, data_len=%d ",\
                          single_read.if_type,single_read.dev_addr,single_read.reg_addr,single_read.reg_addr_len,single_read.data_len));
     
     err = NO_ERR;
@@ -229,7 +229,7 @@ unsigned char Read_Single( SINGLE_READ single_read )
               
     Reverse_Endian(pbuf, single_read.data_len );
     
-    APP_TRACE_INFO(("\r\nSingle Read[%0X] : %0X ", single_read.reg_addr, *(unsigned int*)pbuf));
+    APP_TRACE_INFO(("\r\nSingle Read[%0X] = %0X ", single_read.reg_addr, *(unsigned int*)pbuf));
       
     return err ;  
     
@@ -244,7 +244,7 @@ unsigned char Write_Burst( BURST_WRITE burst_write )
     unsigned char   buf[5] ;  
     unsigned char  *pchar;
     
-    APP_TRACE_INFO(("\r\nWrite_Single: if_type=%d, mem_addr=0x%02X:%02X, mem_addr_len=%d,data_len=%d\r\n",\
+    APP_TRACE_INFO(("\r\nWrite_Single: if_type=%d, mem_addr=0x%02X:%02X, mem_addr_len=%d,data_len=%d ",\
                          burst_write.if_type,burst_write.mem_addr_h,burst_write.mem_addr_l,burst_write.mem_addr_len,burst_write.data_len));
    
     
@@ -343,7 +343,7 @@ unsigned char Read_Burst( BURST_READ burst_read )
     
     unsigned char state, err;
     
-    APP_TRACE_INFO(("\r\nRead_Single: if_type=%d, data_len=%d\r\n",\
+    APP_TRACE_INFO(("\r\nRead_Single: if_type=%d, data_len=%d ",\
                          burst_read.if_type,burst_read.data_len));
    
     
