@@ -275,6 +275,8 @@ static unsigned short int fm36_para_table_3[][2] =
   {0x22E5, 0x20}, //PDMDAC CLOCK As Input
   {0x22EB, 0x0006}, //Actual MIC number in system.
   
+  {0x22F1, 0xD800}, //pwd reset mode., enable pwd bypass
+  
   {0x22FB, 0 },  //run flag
   
   //{0x3FCF, 0x020},//PDMDAC CLOCK As Input
@@ -487,6 +489,19 @@ static unsigned char Config_SR( unsigned short sr )
     
 }  
 
+static unsigned char Power_Down_Bypass( void )
+{
+    
+    unsigned char  err ;    
+    APP_TRACE_INFO(("\r\nPower down FM36 to bypass SP0<-->SP1\r\n"));
+     
+    err = DM_SingleWrite( FM36_I2C_ADDR, 0x3FEF, 0x2000 ) ; //pwd
+    if( OS_ERR_NONE != err ) {
+        return FM36_WR_DM_ERR;;
+    }    
+    return err;
+    
+}  
 
 
 /*
@@ -634,7 +649,7 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
         APP_TRACE_INFO(("FM36 frame counter stopped !"));
         return FM36_CHECK_COUNTER_ERR;
     }   
-    
+    Power_Down_Bypass();
     return err;
     
 }
