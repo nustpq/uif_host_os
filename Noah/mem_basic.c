@@ -97,6 +97,7 @@ unsigned char CM_SingleWrite(unsigned char dev_addr,unsigned short dm_addr,unsig
 
 
 /************************  DM/ PM/ CM Single Read *****************************/
+
 unsigned char DM_LegacyRead(unsigned char dev_addr, unsigned short dm_addr,unsigned char *pVal)
 {
     unsigned char state ;    

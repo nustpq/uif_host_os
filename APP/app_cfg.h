@@ -55,7 +55,7 @@
 
 #define  APP_CFG_TASK_UART_TX_PRIO                         2
 #define  APP_CFG_TASK_UART_TX_RULER_PRIO                   3
-#define  APP_CFG_TASK_UART_RX_PRIO                         4
+#define  APP_CFG_TASK_UART_RX_PRIO                         1
 #define  APP_CFG_TASK_NOAH_PRIO                            5
 #define  APP_CFG_TASK_NOAH_RULER_PRIO                      6
 #define  APP_CFG_TASK_CMD_PARSE_PRIO                       8

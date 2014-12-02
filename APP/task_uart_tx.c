@@ -97,10 +97,13 @@ void App_TaskUART_Tx( void *p_arg )
                     sum  =  CheckSum(   pPcCmd->head, &(pPcCmd->DataLen), pPcCmd->DataLen + 1); //calculate checksum      
                     
                     Queue_WriteBuf( pTaskMsgIN,  (void*)pUART_Send_Buf[PC_UART], pPcCmd->DataLen + 2 ); //3Bytes = head(1Bytes) + len(1Bytes)
-                    Queue_Write( (void*)pUART_Send_Buf[PC_UART], sum   ); //  check sum(1Bytes)
+                    errCode = Queue_Write( (void*)pUART_Send_Buf[PC_UART], sum   ); //  check sum(1Bytes)
+                    if( errCode != 0 ) {
+                       APP_TRACE_INFO(("\r\nApp_TaskUART_Tx Queue ERROR: %d\r\n ",errCode)); 
+                    }
                     UART_WriteStart( PC_UART ); //send data  
                     
-                    OSSemPend(ACK_Sem_PCUART, 500, &errCode);//pending 500ms for ACK back                     
+                    OSSemPend(ACK_Sem_PCUART, 1000, &errCode);//pending 1000ms for ACK back                     
                     if( OS_ERR_NONE == errCode )   {               
                         OSMemPut( pMEM_Part_MsgUART, pTaskMsgIN );    //release mem 
                         PcCmdTxID += 0x40;// this frame send out ok, frame ++,   //0xC0 

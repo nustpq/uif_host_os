@@ -57,7 +57,7 @@ void App_TaskUART_Rx( void *p_arg )
     CPU_INT08U       temp ;	
     CPU_INT08U       counter ;	
     CPU_INT08U       idle_counter ;	    
-	CMDREAD          CMD_Read_PC ;
+    CMDREAD          CMD_Read_PC ;
     CMDREAD          CMD_Read_Ruler ;
     
     Init_CMD_Read( &CMD_Read_PC, EVENT_MsgQ_PCUART2Noah ) ;

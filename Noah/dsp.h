@@ -36,4 +36,6 @@ extern unsigned char DMIC_PGA_Control( unsigned short gain );
 extern unsigned char iM401_Bypass( void );
 extern unsigned char iM401_Standby( void );
 
+extern unsigned char FM36_PWD_Bypass( void );
+
 #endif

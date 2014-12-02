@@ -489,7 +489,7 @@ static unsigned char Config_SR( unsigned short sr )
     
 }  
 
-static unsigned char Power_Down_Bypass( void )
+unsigned char FM36_PWD_Bypass( void )
 {
     
     unsigned char  err ;    
@@ -498,7 +498,8 @@ static unsigned char Power_Down_Bypass( void )
     err = DM_SingleWrite( FM36_I2C_ADDR, 0x3FEF, 0x2000 ) ; //pwd
     if( OS_ERR_NONE != err ) {
         return FM36_WR_DM_ERR;;
-    }    
+    }  
+    
     return err;
     
 }  
@@ -525,18 +526,17 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
     unsigned int   i;
     unsigned short temp, temp2 ;
     unsigned short addr, val; 
-    unsigned char  err ; 
-    
+    unsigned char  err ;     
    
-    if( sr == sr_saved  &&  mic_num == mic_num_saved ) { //just check this 2 parameters, b/c other won't change in AB03
-        APP_TRACE_INFO(("No need Re-Init FM36\r\n"));
-        return NO_ERR;
-        
-    } else {
-        sr_saved = sr ;
-        mic_num_saved = mic_num ;
-        
-    }   
+//    if( sr == sr_saved  &&  mic_num == mic_num_saved ) { //just check this 2 parameters, b/c other won't change in AB03
+//        APP_TRACE_INFO(("No need Re-Init FM36\r\n"));
+//        return NO_ERR;
+//        
+//    } else {
+//        sr_saved = sr ;
+//        mic_num_saved = mic_num ;
+//        
+//    }   
     
     Pin_Reset_FM36();  
     
@@ -648,8 +648,10 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
     if( temp == temp2 ) {
         APP_TRACE_INFO(("FM36 frame counter stopped !"));
         return FM36_CHECK_COUNTER_ERR;
-    }   
-    Power_Down_Bypass();
+    } 
+    
+    FM36_PWD_Bypass();
+    
     return err;
     
 }

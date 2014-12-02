@@ -401,7 +401,7 @@ unsigned char TWID_Write    (
             while( !TWI_ByteSent(pTwi) && (++timeout<TWITIMEOUTMAX) );
             if (timeout == TWITIMEOUTMAX) {
                  OS_EXIT_CRITICAL();
-                //TRACE_ERROR("TWID Timeout BS\n\r");             
+                 //TRACE_ERROR("TWID Timeout BS\n\r");             
                  state =  TWID_ERROR_TIMEOUT;
                  return state;
             }

@@ -23,8 +23,8 @@
 
 #define QUEUE_FULL          8                           /* 队列满                                       */
 #define QUEUE_EMPTY         4                           /* 无数据                                       */
-#define QUEUE_OK            1                           /* 操作成功                                     */
-#define QUEUE_FAIL          0                           /* 参数错误                                     */
+#define QUEUE_OK            0                           /* 操作成功                                     */
+#define QUEUE_FAIL          1                           /* 参数错误                                     */
 
 #define Q_WRITE_MODE        1                           /* 操作成功                                     */
 #define Q_WRITE_FRONT_MODE  2                           /* 操作成功                                     */
