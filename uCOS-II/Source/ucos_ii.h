@@ -488,6 +488,7 @@ typedef struct os_mem {                   /* MEMORY CONTROL BLOCK               
 #if OS_MEM_NAME_EN > 0u
     INT8U  *OSMemName;                    /* Memory partition name                                     */
 #endif
+    INT32U  OSMemNFreeMin;
 } OS_MEM;
 
 

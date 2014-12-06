@@ -94,7 +94,7 @@ Category=_ 0
 [Disassemble mode]
 mode=2
 [Breakpoints2]
-Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Driver\flashd_efc.c}.680.43" 0 0 1 "" 0 "" 0
+Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Driver\flashd_efc.c}.680.42" 0 0 1 "" 0 "" 0
 Count=1
 [Aliases]
 Count=0

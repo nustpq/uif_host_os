@@ -44,7 +44,7 @@
 /*
 *********************************      Version Declaration       ****************************************
 */
-const CPU_CHAR fw_version[]  = "[FW:H:V0.41]"; //fixed size string
+const CPU_CHAR fw_version[]  = "[FW:H:V0.5]"; //fixed size string
 
 #ifdef  BOARD_TYPE_AB01
 const CPU_CHAR hw_version[]  = "[HW:V1.0]"; 
@@ -2276,7 +2276,7 @@ void Get_Run_Time( void )
 void Head_Info ( void )
 { 
     FLASH_INFO flash_info;
-    Read_Flash_State(&flash_info);
+    Read_Flash_State(&flash_info, FLASH_ADDR_FW_STATE );
     APP_TRACE_INFO(("\r\n\r\n")); 
     APP_TRACE_INFO(("-----------------------------------------------------------\r\n"));
     APP_TRACE_INFO(("----                    Fortemedia                    -----\r\n"));
@@ -2292,7 +2292,7 @@ void Head_Info ( void )
     Get_Run_Time();
     APP_TRACE_INFO(("\r\n"));  
     APP_TRACE_INFO(("-------------------------------------------------   GLOBAL VARIABLES STATUS   ------------------------------------------------------\r\n")); 
-    APP_TRACE_INFO(("MEM_Part_MsgUART :         %2d / %2d   of the memory partiation used\r\n", pMEM_Part_MsgUART->OSMemNBlks - pMEM_Part_MsgUART->OSMemNFree,  pMEM_Part_MsgUART->OSMemNBlks)); 
+    APP_TRACE_INFO(("MEM_Part_MsgUART :         %7d(Max%2d) / %2d   of the memory partiation used\r\n", pMEM_Part_MsgUART->OSMemNBlks - pMEM_Part_MsgUART->OSMemNFree, pMEM_Part_MsgUART->OSMemNBlks - pMEM_Part_MsgUART->OSMemNFreeMin,  pMEM_Part_MsgUART->OSMemNBlks)); 
     APP_TRACE_INFO(("Tx_ReSend_Happens:         %7d   times happened\r\n", Tx_ReSend_Happens ));
     APP_TRACE_INFO(("Tx_ReSend_Happens_Ruler:   %7d   times happened\r\n", Tx_ReSend_Happens_Ruler ));
     APP_TRACE_INFO(("TWI_Sem_lock:              %7d   ( default 1 )\r\n", TWI_Sem_lock->OSEventCnt ));   

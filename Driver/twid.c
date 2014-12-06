@@ -221,7 +221,11 @@ unsigned char TWID_Read      (
     pTwi      = twid.pTwi; 
     pTransfer = (AsyncTwi *)twid.pTransfer; 
     state     = TWID_NO_ERROR;
-        
+    
+    if( (num == 0) && (isize == 0) ) {
+        return state;
+    }
+    
     if (pAsync) {  // Asynchronous transfer
       
         if (pTransfer) { // Check that no transfer is already pending
@@ -342,7 +346,11 @@ unsigned char TWID_Write    (
     pTwi      = twid.pTwi; 
     pTransfer = (AsyncTwi *)twid.pTransfer;      
     state     = TWID_NO_ERROR;
-         
+    
+    if( (num == 0) && (isize == 0) ) {
+        return state;
+    }
+    
     if (pAsync) {  // Asynchronous transfer
       
         if (pTransfer) { // Check that no transfer is already pending

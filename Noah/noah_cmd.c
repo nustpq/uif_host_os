@@ -609,14 +609,12 @@ static CPU_INT08U  EMB_Data_Build (EMB_BUF     *pEBuf,
             pEBuf->length = pos + 3;          
         break;
         
-        case DATA_UIF_SINGLE_RD :
+        case DATA_UIF_RAW_RD :
             pos = emb_init_builder(pChar, EMB_BUF_SIZE, cmd_type, &builder);
-            pos = emb_append_attr_uint(&builder, pos, 1, pPCCMD->single_read.if_type);
-            pos = emb_append_attr_uint(&builder, pos, 2, pPCCMD->single_read.dev_addr); 
-            pos = emb_append_attr_uint(&builder, pos, 3, pPCCMD->single_read.reg_addr);  
-            pos = emb_append_attr_uint(&builder, pos, 4, pPCCMD->single_read.reg_addr_len);
-            pos = emb_append_attr_uint(&builder, pos, 5, *(unsigned int*)Reg_RW_Data);
-            pos = emb_append_attr_uint(&builder, pos, 6, pPCCMD->single_read.data_len);
+            pos = emb_append_attr_uint(&builder, pos, 1, pPCCMD->raw_read.if_type);
+            pos = emb_append_attr_uint(&builder, pos, 2, pPCCMD->raw_read.dev_addr); 
+            pos = emb_append_attr_uint(&builder, pos, 3, pPCCMD->raw_read.data_len_read);            
+            pos = emb_append_attr_binary(&builder, pos, 4, pPCCMD->raw_read.pdata_read, pPCCMD->raw_read.data_len_read);
             pos = emb_append_end(&builder, pos);
             pEBuf->data[1] = pos & 0xFF;    
             pEBuf->data[2] = (pos>>8) & 0xFF; 
@@ -717,10 +715,8 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             err = Reset_Audio(); 
             Send_GACK(err);
         break ; 
-        
-        
-        ////////////////////////////////////////////////////////////////////////
-        
+                
+        ////////////////////////////////////////////////////////////////////////        
         
         case PC_CMD_SET_IF_CFG :
             Send_DACK(err);
@@ -737,51 +733,61 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             Send_GACK(err);
         break ;
         
-        case PC_CMD_SINGLE_WRITE :
+        case PC_CMD_RAW_WRITE :
             Send_DACK(err);            
             temp = emb_get_attr_int(&root, 1, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_write.if_type = (CPU_INT08U)temp;             
+            PCCmd.raw_write.if_type = (CPU_INT08U)temp;             
             temp = emb_get_attr_int(&root, 2, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_write.dev_addr = (CPU_INT08U)temp;              
+            PCCmd.raw_write.dev_addr = (CPU_INT08U)temp; 
             temp = emb_get_attr_int(&root, 3, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_write.reg_addr = (CPU_INT32U)temp;             
-            temp = emb_get_attr_int(&root, 4, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_write.reg_addr_len = (CPU_INT08U)temp;            
-            temp = emb_get_attr_int(&root, 5, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_write.data = (CPU_INT32U)temp;             
-            temp = emb_get_attr_int(&root, 6, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_write.data_len = (CPU_INT08U)temp;             
-            err = Write_Single( PCCmd.single_write );
+            PCCmd.raw_write.data_len = (CPU_INT32U)temp;  
+            pBin = emb_get_attr_binary(&root, 4, (int*)&temp);
+            if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.raw_write.pdata = (CPU_INT08U *)pBin; 
+            err = Raw_Write( &PCCmd.raw_write );
             Send_GACK(err);
         break ;
         
-        case PC_CMD_SINGLE_READ :
-            Send_DACK(err);          
+        case PC_CMD_RAW_READ :
+            Send_DACK(err);           
             temp = emb_get_attr_int(&root, 1, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_read.if_type = (CPU_INT08U)temp;             
+            PCCmd.raw_read.if_type = (CPU_INT08U)temp;             
             temp = emb_get_attr_int(&root, 2, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_read.dev_addr = (CPU_INT08U)temp;              
-            temp = emb_get_attr_int(&root, 3, -1);
+            PCCmd.raw_read.dev_addr = (CPU_INT08U)temp;            
+            temp = emb_get_attr_int(&root, 3, -1);           
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_read.reg_addr = (CPU_INT32U)temp;             
+            PCCmd.raw_read.data_len_read = (CPU_INT32U)temp;  
+            
             temp = emb_get_attr_int(&root, 4, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_read.reg_addr_len = (CPU_INT08U)temp;            
-            temp = emb_get_attr_int(&root, 5, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.single_read.data_len = (CPU_INT08U)temp;        
-            err = Read_Single( PCCmd.single_read );
+            if(temp == -1 ) { 
+                //Send_GACK(EMB_CMD_ERR);  break; 
+                temp = 0;};
+            PCCmd.raw_read.data_len_write = (CPU_INT32U)temp;  
+            pBin = emb_get_attr_binary(&root, 5, (int*)&temp);
+            if(pBin == NULL ) { 
+                //Send_GACK(EMB_CMD_ERR);  break; 
+            }            
+            PCCmd.raw_read.pdata_write = (CPU_INT08U *)pBin;             
+            err = Raw_Read( &PCCmd.raw_read );
             if( err != NO_ERR ) { Send_GACK(err); break; }             
-            err = EMB_Data_Build( pEBuf_Data, DATA_UIF_SINGLE_RD, &PCCmd );               
-            pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pEBuf_Data->data, pEBuf_Data->length, 0, NULL, 0 ) ;               
+            err = EMB_Data_Build( pEBuf_Data, DATA_UIF_RAW_RD, &PCCmd );                    
+            pdata = pEBuf_Data->data;
+            data_length = pEBuf_Data->length;
+            //APP_TRACE_INFO(("\r\n::::: data_length %d", data_length));
+            while( data_length > 0 ){ 
+                temp = data_length > (NOAH_CMD_DATA_MLEN-2) ? (NOAH_CMD_DATA_MLEN-2) : data_length ;  
+                //APP_TRACE_INFO(("\r\n::::: temp %d", temp));
+                err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pdata, temp, 0, NULL, 0 ) ; 
+                //Dump_Data(pdata,temp);
+                if( OS_ERR_NONE != err ) { break;}                    
+                data_length -= temp;
+                pdata += temp;        
+            }      
             Send_GACK(err);           
         break ;
         
@@ -812,27 +818,42 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             Send_GACK(err);
         break ;
           
-        case PC_CMD_BURST_READ :
-            Send_DACK(err);
-           
+//        case PC_CMD_BURST_READ :
+//            Send_DACK(err);
+//           
+//            Send_GACK(err);
+//        break ;
+//                
+//        case PC_CMD_SESSION :
+//            Send_DACK(err);
+//           
+//            Send_GACK(err);
+//        break ;
+//                
+//        case PC_CMD_DELAY :
+//            Send_DACK(err);
+//           
+//            Send_GACK(err);
+//        break ;
+    
+        case PC_CMD_MCU_FLASH_WRITE :
+            Send_DACK(err);            
+            temp = emb_get_attr_int(&root, 1, -1);
+            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.mcu_flash.addr_index = (CPU_INT08U)temp;             
+            temp = emb_get_attr_int(&root, 2, -1);
+            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.mcu_flash.data_len = (CPU_INT32U)temp;        
+            pBin = emb_get_attr_binary(&root, 3, (int*)&temp);
+            if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.mcu_flash.pdata = (CPU_INT08U *)pBin;
+             pBin = emb_get_attr_binary(&root, 4, (int*)&temp);
+            if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.mcu_flash.pStr = (CPU_INT08U *)pBin;          
+            err = Save_DSP_VEC(  &PCCmd.mcu_flash );    
             Send_GACK(err);
         break ;
-                
-        case PC_CMD_SESSION :
-            Send_DACK(err);
-           
-            Send_GACK(err);
-        break ;
-                
-        case PC_CMD_DELAY :
-            Send_DACK(err);
-           
-            Send_GACK(err);
-        break ;
-        
-        
-        ////////////////////////////////////////////////////////////////////////
-        
+        ////////////////////////////////////////////////////////////////////////        
         
         case PC_CMD_RAED_RULER_INFO : 
             Send_DACK(err);             
@@ -976,7 +997,7 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
              if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }              
              pStr = (unsigned char *)emb_get_attr_string(&root, 3);            
              if(pStr == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }            
-             err = Save_Ruler_FW( temp, pBin, pStr, size );             
+             err = Save_Ruler_FW( temp, pBin, pStr, size );           
              Send_GACK(err);             
         break ; 
         

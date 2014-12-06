@@ -115,12 +115,18 @@ extern unsigned short SPI_Read(AT91S_SPI *spi);
 extern unsigned char SPI_ReadBuffer(AT91S_SPI *spi,
                                            void *buffer,
                                            unsigned int length);
+unsigned char SPI_ReadWriteBuffer(AT91S_SPI *spi,
+                                    void *buffer_r,
+                                    void *buffer_t,
+                                    unsigned int length_r,
+                                    unsigned int length_t );
+
 extern void SPI_Initialize( AT91S_SPI *spi, unsigned int npcs, unsigned int spi_clk, unsigned int mclk, unsigned int mode );
 extern void SPI_Init( unsigned int spi_clk, unsigned char mode ) ;
 
 extern unsigned char SPI_WriteBuffer_API(  void *buffer,  unsigned int length);
 extern unsigned char SPI_ReadBuffer_API(  void *buffer,  unsigned int length);
-
+extern unsigned char SPI_ReadWriteBuffer_API(  void *buffer_r,  void *buffer_w, unsigned int length_r,  unsigned int length_w );
 
 #endif //#ifndef SPI_H
 

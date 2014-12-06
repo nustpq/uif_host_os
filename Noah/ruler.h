@@ -77,7 +77,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 #define FW_DOWNLAD_CMD_START     1
 #define FW_DOWNLAD_CMD_DOING     2
 #define FW_DOWNLAD_CMD_DONE      3
@@ -86,8 +85,15 @@
 #define FW_DOWNLAD_STATE_UNFINISHED    0xAA
 #define FW_DOWNLAD_STATE_FINISHED      0x55
 
-#define FLASH_ADDR_FW_STATE   ( AT91C_IFLASH + AT91C_IFLASH_CODE_SIZE )
-#define FLASH_ADDR_FW_BIN     ( FLASH_ADDR_FW_STATE + AT91C_IFLASH_PAGE_SIZE )
+#define FLASH_ADDR_FW_BIN_MAX_SIZE   ( 0x10000 )  //64kB
+#define FLASH_ADDR_FW_STATE          ( AT91C_IFLASH + AT91C_IFLASH_CODE_SIZE )  //from 128kB-
+#define FLASH_ADDR_FW_BIN            ( FLASH_ADDR_FW_STATE + AT91C_IFLASH_PAGE_SIZE ) //from 128kB+256
+
+#define FLASH_ADDR_FW_VEC_SIZE       ( 0x4000 ) //16kB
+#define FLASH_ADDR_FW_VEC_NUM        ( 4 )      //64kB = 16kB * 4
+#define FLASH_ADDR_FW_VEC_STATE      ( AT91C_IFLASH + AT91C_IFLASH_CODE_SIZE + FLASH_ADDR_FW_BIN_MAX_SIZE  )
+#define FLASH_ADDR_FW_VEC            ( FLASH_ADDR_FW_VEC_STATE + AT91C_IFLASH_PAGE_SIZE * FLASH_ADDR_FW_VEC_NUM ) //from 128kB + 64kB + (0.256*4)kB
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -214,20 +220,19 @@ typedef struct {
 
 typedef struct {
     unsigned char    if_type;      
-    unsigned char    dev_addr;
-    unsigned char    reg_addr_len;
-    unsigned char    data_len;
-    unsigned int     reg_addr;    
-    unsigned int     data;
-}SINGLE_WRITE ;
+    unsigned char    dev_addr;   
+    unsigned int     data_len;
+    unsigned char*   pdata;
+}RAW_WRITE ;
 
 typedef struct {
     unsigned char    if_type;      
     unsigned char    dev_addr;
-    unsigned char    reg_addr_len;
-    unsigned char    data_len;
-    unsigned int     reg_addr;
-}SINGLE_READ ;
+    unsigned int     data_len_read;
+    unsigned int     data_len_write;
+    unsigned char*   pdata_read;
+    unsigned char*   pdata_write;
+}RAW_READ ;
 
 typedef struct {
     unsigned short   mem_addr_l; 
@@ -250,8 +255,15 @@ typedef struct {
     unsigned char*   pdata;
     
 }BURST_READ ;
- 
+
+typedef struct {
+    unsigned char    addr_index;   
+    unsigned int     data_len;
+    unsigned char*   pdata;
+    unsigned char*   pStr;
+}MCU_FLASH ;
     
+   
 
 extern unsigned char Audio_Version[12];
 extern unsigned char Ruler_CMD_Result;
@@ -294,6 +306,7 @@ extern void          simple_test_use( void );
 extern unsigned char Update_Ruler_FW( unsigned char ruler_slot_id );
 extern unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned char *pStr, unsigned int size );
 extern unsigned char Ruler_Setup_Sync(unsigned char ruler_slot_id);
+extern unsigned char Save_DSP_VEC( MCU_FLASH *p_dsp_vec );
 
 
 extern void Debug_Audio( void ) ;

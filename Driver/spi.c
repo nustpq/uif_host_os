@@ -213,22 +213,58 @@ unsigned char SPI_ReadBuffer(AT91S_SPI *spi,
     if (spi->SPI_RCR == 0) {
 
         spi->SPI_RPR = (unsigned int) buffer;
-        spi->SPI_RCR = length;
-        spi->SPI_PTCR = AT91C_PDC_RXTEN;
+        spi->SPI_RCR = length;           
+        spi->SPI_TCR = length;
+        spi->SPI_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
+        
         return 1;
     }
     // Check if second bank is free
     else if (spi->SPI_RNCR == 0) {
 
         spi->SPI_RNPR = (unsigned int) buffer;
-        spi->SPI_RNCR = length;
+        spi->SPI_RNCR = length;  
+        spi->SPI_TNCR = length;
+        
         return 1;
     }
 #endif
     // No free bank
     return 0;
 }
+unsigned char SPI_ReadWriteBuffer(AT91S_SPI *spi,
+                                    void *buffer_r,
+                                    void *buffer_t,
+                                    unsigned int length_r,
+                                    unsigned int length_t )
+{
+    
+#if !defined(CHIP_SPI_DMA)
+    // Check if the first bank is free
+    if (spi->SPI_RCR == 0) {
 
+        spi->SPI_RPR = (unsigned int) buffer_r;
+        spi->SPI_RCR = length_r + length_t; 
+        spi->SPI_TPR = (unsigned int) buffer_t;
+        spi->SPI_TCR = length_r + length_t;
+        spi->SPI_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
+        
+        return 1;
+    }
+    // Check if second bank is free
+    else if (spi->SPI_RNCR == 0) {
+
+        spi->SPI_RNPR = (unsigned int) buffer_r;
+        spi->SPI_RNCR = length_r+length_t; 
+        spi->SPI_TNPR = (unsigned int) buffer_t;
+        spi->SPI_TNCR = length_t;
+        
+        return 1;
+    }
+#endif
+    // No free bank
+    return 0;
+}
 #define SPI_TIME_OUT  2000  //2000ms time out
 
 //return 0 if write succeed
@@ -266,28 +302,63 @@ unsigned char SPI_WriteBuffer_API(  void *buffer,  unsigned int length )
 unsigned char SPI_ReadBuffer_API(  void *buffer,  unsigned int length )
 {
     unsigned char state;
-    unsigned char err;
-    unsigned int  couter = 0 ;
-    
+    unsigned char err = 0;
+    unsigned int  couter = 0 ;   
     OSSemPend( SPI_Sem, 0, &err );    
 
-    state = SPI_ReadBuffer( spi_if, buffer, length );
+    state = SPI_ReadBuffer( spi_if, buffer,length );
+  
     if( state == 1 ) {
         while( ! SPI_IsReadFinished( spi_if ) ) {
             OSTimeDly(1);
             if( couter++ > SPI_TIME_OUT ) { //timeout : 2s
-                state = 0 ;
+                err = 2 ;
                 break;
             }            
-        }        
-    }    
+        } 
+        
+    } else {
+        
+        err = 1;
+
+    }        
     
     OSSemPost( SPI_Sem ); 
     
-    return (state == 0) ;
+    return err ;
     
 }
 
+unsigned char SPI_ReadWriteBuffer_API(  void *buffer_r,  void *buffer_w, unsigned int length_r,  unsigned int length_w )
+{
+    unsigned char state;
+    unsigned char err = 0;
+    unsigned int  couter = 0 ;
+   
+    OSSemPend( SPI_Sem, 0, &err );    
+
+    state = SPI_ReadWriteBuffer( spi_if, buffer_r, buffer_w, length_r, length_w );
+  
+    if( state == 1 ) {
+        while( ! SPI_IsReadFinished( spi_if ) ) {
+            OSTimeDly(1);
+            if( couter++ > SPI_TIME_OUT ) { //timeout : 2s
+                err = 2 ;
+                break;
+            }            
+        } 
+        
+    } else {
+        
+        err = 1;
+
+    }        
+    
+    OSSemPost( SPI_Sem ); 
+    
+    return err ;
+    
+}
 
 void SPI_Initialize( AT91S_SPI *spi, unsigned int npcs, unsigned int spi_clk, unsigned int mclk, unsigned int mode )
 {
@@ -315,7 +386,7 @@ void SPI_Initialize( AT91S_SPI *spi, unsigned int npcs, unsigned int spi_clk, un
    
     SPI_Configure(spi, AT91C_ID_SPI0,  AT91C_SPI_MSTR | AT91C_SPI_MODFDIS |(0x0E << 16)  )  ;        
 
-    SPI_ConfigureNPCS(spi, npcs,  mode | (clk_div << 8) | (200<16) )  ; //delay after NPCS active before send data: MCLK/200
+    SPI_ConfigureNPCS(spi, npcs,  mode |  (clk_div << 8) | (200<<16) )  ; //delay after NPCS active before send data: MCLK/200
 
     SPI_Enable(spi);   
      

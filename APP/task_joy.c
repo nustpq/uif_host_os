@@ -72,8 +72,9 @@ void  App_TaskJoy (void *p_arg)
     while ( DEF_TRUE ) {     /* Task body, always written as an infinite loop.           */   
         
         if( Flag_Reset_Pin_Trigger != 0 ){ //check reset flag          
-            Flag_Reset_Pin_Trigger-- ;
             
+            //APP_TRACE_INFO(("\r\n\r\n>> Flag_Reset_Pin_Trigger = %d\r\n",Flag_Reset_Pin_Trigger ));
+            Flag_Reset_Pin_Trigger-- ;
             for(i = 0; i<100 ; i++) { //check if a 1000ms low level on reset pin                  
                 if( (AT91C_BASE_RSTC->RSTC_RSR & AT91C_RSTC_NRSTL) != 0) {
                     break;

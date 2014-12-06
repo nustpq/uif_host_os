@@ -1163,10 +1163,10 @@ unsigned char FLASHD_Write_Safe( unsigned int address, const void *pBuffer,  uns
 * Note(s)     : None.
 *********************************************************************************************************
 */
-void Read_Flash_State( FLASH_INFO  *pFlash_Info )
+void Read_Flash_State( FLASH_INFO  *pFlash_Info, unsigned int flash_address )
 {
     
-    *pFlash_Info = *(FLASH_INFO *)FLASH_ADDR_FW_STATE ;    
+    *pFlash_Info = *(FLASH_INFO *)flash_address;    
     
 }
 
@@ -1185,13 +1185,13 @@ void Read_Flash_State( FLASH_INFO  *pFlash_Info )
 * Note(s)     : None.
 *********************************************************************************************************
 */
-unsigned char Write_Flash_State( FLASH_INFO   *pFlash_Info )
+unsigned char Write_Flash_State( FLASH_INFO   *pFlash_Info, unsigned int flash_address )
 {
     
     unsigned char err;   
     //save state to flash
     pFlash_Info->s_w_counter++ ;
-    err = FLASHD_Write_Safe( FLASH_ADDR_FW_STATE, pFlash_Info, AT91C_IFLASH_PAGE_SIZE); 
+    err = FLASHD_Write_Safe( flash_address, pFlash_Info, AT91C_IFLASH_PAGE_SIZE); 
     if(err != NO_ERR ) {                     
         APP_TRACE_INFO(("ERROR: Write flash state failed!\r\n"));  
     }
@@ -1226,7 +1226,7 @@ unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned cha
     FLASH_INFO    flash_info;
     
     err = NO_ERR;
-    Read_Flash_State(&flash_info);
+    Read_Flash_State(&flash_info, FLASH_ADDR_FW_STATE);
      
     switch( cmd ) {
         case FW_DOWNLAD_CMD_START :
@@ -1274,7 +1274,7 @@ unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned cha
     flash_info.bin_size   = flash_addr - FLASH_ADDR_FW_BIN ;
     strcpy(flash_info.bin_name, (char const*)pStr);  
     if( cmd != FW_DOWNLAD_CMD_DOING ) {        
-        err = Write_Flash_State( &flash_info ); 
+        err = Write_Flash_State( &flash_info, FLASH_ADDR_FW_STATE ); 
         if( err == NO_ERR && cmd == FW_DOWNLAD_CMD_DONE ) { 
               APP_TRACE_INFO(("Bin file[%d Btyes] saved successfully!\r\n",flash_info.bin_size));     
         }   
@@ -1283,6 +1283,97 @@ unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned cha
     
 }
 
+/*
+*********************************************************************************************************
+*                                       Save_DSP_VEC()
+*
+* Description : Save ruler FW bin file to flash
+*               
+* Argument(s) :  cmd  :  1~ 3.
+*               *pBin : pointer to bin file data packge to be wriiten to flash
+*               *pStr : pointer to file name string
+*                size : bin package file size 
+*
+* Return(s)   : NO_ERR :   execute successfully
+*               others :   =error code .  
+*
+* Note(s)     : Vec size usually not exceed 2kB, so one emb package should be ok.
+*********************************************************************************************************
+*/
+unsigned char Save_DSP_VEC( MCU_FLASH *p_dsp_vec )
+{  
+    unsigned char err; 
+    unsigned int flash_addr;
+    unsigned int index;
+    FLASH_INFO   flash_info;
+    
+    
+    if( (index >= FLASH_ADDR_FW_VEC_NUM) || (p_dsp_vec->data_len > (FLASH_ADDR_FW_VEC_SIZE - AT91C_IFLASH_PAGE_SIZE*FLASH_ADDR_FW_VEC_NUM))  ) {
+        return MCU_FLASH_OP_ERR;
+    }
+    
+    err = NO_ERR;
+    index = p_dsp_vec->addr_index ;
+    flash_addr = FLASH_ADDR_FW_VEC + index * FLASH_ADDR_FW_VEC_SIZE;
+    
+//    Read_Flash_State(&flash_info, FLASH_ADDR_FW_VEC_STATE + AT91C_IFLASH_PAGE_SIZE * index );
+//     
+//    switch( cmd ) {
+//        case FW_DOWNLAD_CMD_START :
+//            APP_TRACE_INFO(("Start loading ruler bin file to AB01 flash ... \r\n"));
+//            flash_addr = FLASH_ADDR_FW_BIN;                
+//            flash_info.f_w_state = FW_DOWNLAD_STATE_UNFINISHED ;
+//            flash_info.bin_size  = 0;
+//        break;   
+//        case FW_DOWNLAD_CMD_DOING :
+//            APP_TRACE_INFO(("> ")); 
+//            if( flash_info.f_w_state != FW_DOWNLAD_STATE_UNFINISHED ) {
+//                APP_TRACE_INFO(("ERROR: flash state not match!\r\n"));
+//                err  =  FW_BIN_STATE_0_ERR;                
+//            } 
+//        break;
+//        case FW_DOWNLAD_CMD_DONE :
+//            APP_TRACE_INFO((">\r\n")); 
+//            if( flash_info.f_w_state != FW_DOWNLAD_STATE_UNFINISHED ) {
+//                APP_TRACE_INFO(("ERROR: flash state not match!\r\n"));
+//                err  =  FW_BIN_STATE_1_ERR;
+//                break;
+//            }
+//            flash_info.f_w_state = FW_DOWNLAD_STATE_FINISHED ;
+//            flash_info.f_w_counter++;            
+//         break;
+//         
+//         default:
+//            APP_TRACE_INFO(("ERROR:  Save ruler FW bad cmd!\r\n"));
+//            err = FW_BIN_SAVE_CMD_ERR;    
+//         break;
+//        
+//    }
+//    if( err != NO_ERR ) {
+//        return err;
+//    }    
+    
+    
+    
+    Buzzer_OnOff(1);               
+    LED_Toggle(LED_DS2);    
+    err = FLASHD_Write_Safe( flash_addr, p_dsp_vec->pdata, p_dsp_vec->data_len ); 
+    Buzzer_OnOff(0); 
+    if(err != NO_ERR ) {                     
+        APP_TRACE_INFO(("ERROR: Write MCU flash failed!\r\n"));
+        return err;
+    } 
+    flash_info.bin_size   = p_dsp_vec->data_len ;
+    strcpy(flash_info.bin_name, (char const*)(p_dsp_vec->pStr)); 
+          
+    err = Write_Flash_State( &flash_info,  FLASH_ADDR_FW_VEC_STATE + AT91C_IFLASH_PAGE_SIZE * index ); 
+    if( err == NO_ERR  ) { 
+        APP_TRACE_INFO(("Vec file[%d Btyes] saved successfully!\r\n",flash_info.bin_size));     
+    }   
+     
+    return err;  
+    
+}
 
 
 /*

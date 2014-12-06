@@ -650,7 +650,7 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
         return FM36_CHECK_COUNTER_ERR;
     } 
     
-    FM36_PWD_Bypass();
+    //FM36_PWD_Bypass();
     
     return err;
     

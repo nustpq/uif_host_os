@@ -47,6 +47,7 @@
 #define CHIP_BUFF_ERR            171u
 #define MMX_ERR                  172u
 #define PROTOCOL_ERR             173u
+#define MCU_FLASH_OP_ERR         174u
 
 #define SET_GPIO_ERR             177u
 #define SET_SPI_ERR              178u
@@ -218,12 +219,13 @@
 #define  PC_CMD_RESET_AUDIO          15
 
 #define  PC_CMD_SET_IF_CFG           30
-#define  PC_CMD_SINGLE_WRITE         31
-#define  PC_CMD_SINGLE_READ          32
+#define  PC_CMD_RAW_WRITE            31
+#define  PC_CMD_RAW_READ             32
 #define  PC_CMD_BURST_WRITE          33
 #define  PC_CMD_BURST_READ           34
 #define  PC_CMD_SESSION              35
 #define  PC_CMD_DELAY                36
+#define  PC_CMD_MCU_FLASH_WRITE      40
 
 #define  PC_CMD_DOWNLOAD_RULER_FW    100
 #define  PC_CMD_UPDATE_RULER_FW      101
@@ -235,7 +237,7 @@
 #define  DATA_AB_STATUS              10    
 #define  DATA_AB_INFO                50
 
-#define  DATA_UIF_SINGLE_RD          31 //PC_CMD_SINGLE_WRITE type data
+#define  DATA_UIF_RAW_RD             PC_CMD_RAW_WRITE //PC_CMD_RAW_WRITE type data
 
 /*
 *********************************************************************************************************
@@ -254,8 +256,8 @@
 *                  Internal FLASH used by FW Code size in byte (128 Kbytes)
 *********************************************************************************************************
 */
-#define AT91C_IFLASH_CODE_SIZE	 (  0x00020000 )  
-
+#define AT91C_IFLASH_CODE_SIZE	 (  0x00020000 )   //128kB
+ 
 
 /*
 *********************************************************************************************************
@@ -293,11 +295,11 @@ typedef union  {
     UPDATE_BRIDGE_FW      update_bridge_fw;
     
     INTERFACE_CFG         interface_cfg;
-    SINGLE_WRITE          single_write;
-    SINGLE_READ           single_read;
+    RAW_WRITE             raw_write;
+    RAW_READ              raw_read;
     BURST_WRITE           burst_write;
     BURST_READ            burst_read;
-    
+    MCU_FLASH             mcu_flash;
 }PCCMDDAT ;
 
 //#pragma pack()

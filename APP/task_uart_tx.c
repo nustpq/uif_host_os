@@ -90,17 +90,17 @@ void App_TaskUART_Tx( void *p_arg )
                 
                 for( resend_index = 0; resend_index < MAX_RESEND_TIMES; resend_index++ ) {     
                   
-                    Queue_Write( (void*)pUART_Send_Buf[PC_UART] , CMD_DATA_SYNC1   ); //Sync1
-                    Queue_Write( (void*)pUART_Send_Buf[PC_UART], CMD_DATA_SYNC2_1 ); //Sync2        
-              
+                    errCode = Queue_Write( (void*)pUART_Send_Buf[PC_UART] , CMD_DATA_SYNC1   ); //Sync1
+                    if( errCode != 0 ) {   break;  }
+                    errCode = Queue_Write( (void*)pUART_Send_Buf[PC_UART], CMD_DATA_SYNC2_1 ); //Sync2        
+                    if( errCode != 0 ) {   break;  }
                     pPcCmd->head  = SET_FRAME_HEAD( PcCmdTxID, FRAM_TYPE_DATA ) ; //set frame ID for data transmit                                
                     sum  =  CheckSum(   pPcCmd->head, &(pPcCmd->DataLen), pPcCmd->DataLen + 1); //calculate checksum      
                     
-                    Queue_WriteBuf( pTaskMsgIN,  (void*)pUART_Send_Buf[PC_UART], pPcCmd->DataLen + 2 ); //3Bytes = head(1Bytes) + len(1Bytes)
+                    errCode = Queue_WriteBuf( pTaskMsgIN,  (void*)pUART_Send_Buf[PC_UART], pPcCmd->DataLen + 2 ); //3Bytes = head(1Bytes) + len(1Bytes)
+                    if( errCode != 0 ) {   break;  }
                     errCode = Queue_Write( (void*)pUART_Send_Buf[PC_UART], sum   ); //  check sum(1Bytes)
-                    if( errCode != 0 ) {
-                       APP_TRACE_INFO(("\r\nApp_TaskUART_Tx Queue ERROR: %d\r\n ",errCode)); 
-                    }
+                    if( errCode != 0 ) {   break;  }
                     UART_WriteStart( PC_UART ); //send data  
                     
                     OSSemPend(ACK_Sem_PCUART, 1000, &errCode);//pending 1000ms for ACK back                     

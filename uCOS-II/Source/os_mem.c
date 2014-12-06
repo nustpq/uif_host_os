@@ -115,6 +115,7 @@ OS_MEM  *OSMemCreate (void   *addr,
     pmem->OSMemNFree    = nblks;                      /* Store number of free blocks in MCB            */
     pmem->OSMemNBlks    = nblks;
     pmem->OSMemBlkSize  = blksize;                    /* Store block size of each memory blocks        */
+    pmem->OSMemNFreeMin = pmem->OSMemNFree;
     *perr               = OS_ERR_NONE;
     return (pmem);
 }
@@ -163,6 +164,9 @@ void  *OSMemGet (OS_MEM  *pmem,
         pblk                = pmem->OSMemFreeList;    /* Yes, point to next free memory block          */
         pmem->OSMemFreeList = *(void **)pblk;         /*      Adjust pointer to new free list          */
         pmem->OSMemNFree--;                           /*      One less memory block in this partition  */
+        if( pmem->OSMemNFree < pmem->OSMemNFreeMin ) { //PQ add
+            pmem->OSMemNFreeMin = pmem->OSMemNFree;
+        }
         OS_EXIT_CRITICAL();
         *perr = OS_ERR_NONE;                          /*      No error                                 */
         return (pblk);                                /*      Return memory block to caller            */

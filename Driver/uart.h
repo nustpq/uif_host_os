@@ -31,8 +31,8 @@
 #define CHIP_UART                   3 // debug usart can be used to access DSP
 
 
-#define UART0_SEND_QUEUE_LENGTH     512//1024     //PC
-#define UART0_RECE_QUEUE_LENGTH     512//1024      
+#define UART0_SEND_QUEUE_LENGTH     1024     //PC
+#define UART0_RECE_QUEUE_LENGTH     1024      
 
 #define UART1_SEND_QUEUE_LENGTH     512     //Ruler
 #define UART1_RECE_QUEUE_LENGTH     512     

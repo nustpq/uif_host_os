@@ -93,7 +93,7 @@ void  App_TaskUserIF (void *p_arg)
                     APP_TRACE_INFO((" %4d,      %4d,     %4d,     %4d,  %4d, %4d\r\n", (key_state>>0)&(0x01),(key_state>>1)&(0x01),\
                                    (key_state>>2)&(0x01),(key_state>>3)&(0x01),(key_state>>4)&(0x01),(key_state>>5)&(0x01) )); 
                     /**********************************************************************/
-                    //To do something to do with Switch selection...                    
+                    //To do something to do with Switch selection...           
                     
 
                     

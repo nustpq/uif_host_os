@@ -19,15 +19,17 @@
 #define   UIF_TYPE_GPIO    3
 
 
-#define   ATTRIBUTE_FOR_IM401_BURST   41
+#define   ATTRI_IM401_LOAD_CODE   41
 
 
-extern unsigned char   Reg_RW_Data[];
+extern unsigned char Reg_RW_Data[];
 
 extern void Reverse_Endian( unsigned char *pdata, unsigned char size ) ;
 extern unsigned char Setup_Interface( INTERFACE_CFG *interface_cfg );
-extern unsigned char Write_Single( SINGLE_WRITE single_write );
-extern unsigned char Read_Single( SINGLE_READ single_read );
+extern unsigned char Raw_Write( RAW_WRITE *p_raw_write );
+extern unsigned char Raw_Read( RAW_READ *p_raw_read );
 extern unsigned char Write_Burst( BURST_WRITE nurst_write );
+extern void Dump_Data ( unsigned char *pdata, unsigned int size );
+
 
 #endif
