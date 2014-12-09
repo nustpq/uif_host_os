@@ -33,11 +33,13 @@
 #include <pio.h>
 #include <taskcomm.h>
 #include "uart.h"
-
+#include "kfifo.h"
 
 
 OS_EVENT *DBGU_Tx_Sem_lock;  
 OS_EVENT *DBGU_Rx_Sem_lock;
+
+
 
 /*
 *********************************************************************************************************
@@ -70,7 +72,24 @@ CPU_INT08U UART2_Rece_Buf_PDC[UART_PDC_LENGTH];
 
 static  OS_EVENT *USART_Sem[3];
 
+kfifo_t uart_tx_fifo[3];
+kfifo_t uart_rx_fifo[3];
 
+kfifo_t * const pUART_Send_kfifo[]=
+{  
+      &uart_tx_fifo[0],
+      &uart_tx_fifo[1],
+      &uart_tx_fifo[2]
+          
+};
+
+kfifo_t * const pUART_Rece_kfifo[]=
+{  
+      &uart_rx_fifo[0],
+      &uart_rx_fifo[1],
+      &uart_rx_fifo[2]
+          
+};
 
 static const AT91PS_USART  pUARTREG[] =
 {
@@ -184,7 +203,7 @@ CPU_INT08U UART_Init( CPU_INT08U uart_index,void (*isr_handler)( void ),CPU_INT3
             pUARTREG[uart_index]->US_PTCR = AT91C_PDC_RXTEN;        
              
             BSP_IntVectSet((CPU_INT08U   )UART_PID[uart_index],
-                           (CPU_INT08U   )AT91C_AIC_PRIOR_LOWEST,
+                           (CPU_INT08U   )AT91C_AIC_PRIOR_LOWEST+1,
                            (CPU_INT08U   )BSP_INT_SCR_TYPE_INT_HIGH_LEVEL_SENSITIVE,
                            (CPU_FNCT_VOID)isr_handler);        
             BSP_IntClr(UART_PID[uart_index]);  
@@ -196,13 +215,15 @@ CPU_INT08U UART_Init( CPU_INT08U uart_index,void (*isr_handler)( void ),CPU_INT3
         USART_SetReceiverEnabled(    pUARTREG[uart_index], 1 );	
         
         ////////////////////////////////////////////////////////////////////////    
-        if (Queue_Create((void *)pUART_Send_Buf[uart_index], UART_Send_Buf_Size[uart_index] ) == QUEUE_FAIL) {
-              error++;
-              
-        }
-        if (Queue_Create((void *)pUART_Rece_Buf[uart_index], UART_Rece_Buf_Size[uart_index] ) == QUEUE_FAIL)  {
-              error++;
-        }
+//        if (Queue_Create((void *)pUART_Send_Buf[uart_index], UART_Send_Buf_Size[uart_index] ) == QUEUE_FAIL) {
+//              error++;
+//              
+//        }
+//        if (Queue_Create((void *)pUART_Rece_Buf[uart_index], UART_Rece_Buf_Size[uart_index] ) == QUEUE_FAIL)  {
+//              error++;
+//        }
+        kfifo_init_static(pUART_Send_kfifo[uart_index], (unsigned char *)pUART_Send_Buf[uart_index], UART_Send_Buf_Size[uart_index]);
+        kfifo_init_static(pUART_Rece_kfifo[uart_index], (unsigned char *)pUART_Rece_Buf[uart_index], UART_Rece_Buf_Size[uart_index]);
          
     } else {// for DBG_USART
      
@@ -235,7 +256,7 @@ CPU_INT08U UART_Init( CPU_INT08U uart_index,void (*isr_handler)( void ),CPU_INT3
 */
 CPU_INT08U UART_WriteStart( CPU_INT08U uart_index )
 {
-    CPU_INT16U byte_send ;
+    CPU_INT16U byte_send,counter ;
     CPU_INT08U error;
     
 #if OS_CRITICAL_METHOD == 3u   /* Allocate storage for CPU status register   */
@@ -248,13 +269,17 @@ CPU_INT08U UART_WriteStart( CPU_INT08U uart_index )
     
     if ((pUARTREG[uart_index]->US_TCR == 0) && (pUARTREG[uart_index]->US_TNCR == 0)) {
       
-        if( Queue_ReadBuf(  pUART_Send_Buf_PDC[uart_index], 
-                            pUART_Send_Buf[uart_index], 
-                            UART_PDC_LENGTH, 
-                            &byte_send) == QUEUE_OK ) {  
+//        if( Queue_ReadBuf(  pUART_Send_Buf_PDC[uart_index], 
+//                            pUART_Send_Buf[uart_index], 
+//                            UART_PDC_LENGTH, 
+//                            &byte_send) == QUEUE_OK ) {  
+        counter  = kfifo_get_data_size(pUART_Send_kfifo[uart_index]); 
+        if( counter ) { 
+            counter = counter < UART_PDC_LENGTH ? counter : UART_PDC_LENGTH ;
+            kfifo_get(pUART_Send_kfifo[uart_index], pUART_Send_Buf_PDC[uart_index], counter) ;    
                             
             pUARTREG[uart_index]->US_TPR      =  (unsigned int) pUART_Send_Buf_PDC[uart_index];
-            pUARTREG[uart_index]->US_TCR      =  byte_send;                  
+            pUARTREG[uart_index]->US_TCR      =  counter;                  
             pUARTREG[uart_index]->US_PTCR     =  AT91C_PDC_TXTEN ; //start PDC
             pUARTREG[uart_index]->US_IER      =  AT91C_US_ENDTX  ; //enable PDC tx INT
             
@@ -375,7 +400,7 @@ CPU_INT08U UART_Read( CPU_INT08U uart_index, QUEUE_DATA_TYPE *pdata )
 void ISR_PC_UART( void )
 {
     CPU_INT32U status; 
-    CPU_INT16U byte_send;
+    CPU_INT16U byte_send, counter;
     
 #if OS_CRITICAL_METHOD == 3u   /* Allocate storage for CPU status register           */
     OS_CPU_SR  cpu_sr = 0u;
@@ -387,14 +412,19 @@ void ISR_PC_UART( void )
     
     AT91C_BASE_AIC->AIC_IVR = 0;     /* Write the IVR, as required in Protection Mode */
     status = pUARTREG[PC_UART]->US_CSR;  
-    
+             
     if ( status & AT91C_US_ENDTX  )   {  //Transmit INT         
-        if( Queue_ReadBuf(  pUART_Send_Buf_PDC[PC_UART],
-                            pUART_Send_Buf[PC_UART], 
-                            UART_PDC_LENGTH, 
-                            &byte_send) == QUEUE_OK ) {  //move data from PDC buf to queue
+//        if( Queue_ReadBuf(  pUART_Send_Buf_PDC[PC_UART],
+//                            pUART_Send_Buf[PC_UART], 
+//                            UART_PDC_LENGTH, 
+//                            &byte_send) == QUEUE_OK ) {  //move data from PDC buf to queue
+        counter  = kfifo_get_data_size(pUART_Send_kfifo[PC_UART]); 
+        if( counter ) { 
+            counter = counter < UART_PDC_LENGTH ? counter : UART_PDC_LENGTH ;
+            kfifo_get(pUART_Send_kfifo[PC_UART], pUART_Send_Buf_PDC[PC_UART], counter) ; 
+           
             pUARTREG[PC_UART]->US_TPR = (CPU_INT32U) pUART_Send_Buf_PDC[PC_UART];
-            pUARTREG[PC_UART]->US_TCR = byte_send;       
+            pUARTREG[PC_UART]->US_TCR = counter;       
             pUARTREG[PC_UART]->US_PTCR = AT91C_PDC_TXTEN; //start PDC
                     
         } else {
@@ -405,9 +435,15 @@ void ISR_PC_UART( void )
     }
     
     if (status & AT91C_US_ENDRX  )   {  // receive INT
-        Queue_WriteBuf( pUART_Rece_Buf_PDC[PC_UART],  
-                        pUART_Rece_Buf[PC_UART], 
-                        UART_PDC_LENGTH );//move data from queue to PDC buf
+//        Queue_WriteBuf( pUART_Rece_Buf_PDC[PC_UART],  
+//                        pUART_Rece_Buf[PC_UART], 
+//                        UART_PDC_LENGTH );//move data from queue to PDC buf
+        counter = kfifo_get_free_space( pUART_Rece_kfifo[PC_UART] );                    
+        while( counter <  UART_PDC_LENGTH ) {
+             OSTimeDly(5);
+        }
+        kfifo_put(pUART_Rece_kfifo[PC_UART], pUART_Rece_Buf_PDC[PC_UART], UART_PDC_LENGTH) ;
+        
         pUARTREG[PC_UART]->US_RPR  = (CPU_INT32U) pUART_Rece_Buf_PDC[PC_UART];
         pUARTREG[PC_UART]->US_RCR  = UART_PDC_LENGTH;
         pUARTREG[PC_UART]->US_PTCR = AT91C_PDC_RXTEN;
@@ -415,9 +451,16 @@ void ISR_PC_UART( void )
     }
     
     if (status & AT91C_US_TIMEOUT)   {  //receive timeout
-        Queue_WriteBuf( pUART_Rece_Buf_PDC[PC_UART], 
-                        pUART_Rece_Buf[PC_UART], 
-                        (UART_PDC_LENGTH - pUARTREG[PC_UART]->US_RCR) );  //move data from queue to PDC buf        
+//        Queue_WriteBuf( pUART_Rece_Buf_PDC[PC_UART], 
+//                        pUART_Rece_Buf[PC_UART], 
+//                        (UART_PDC_LENGTH - pUARTREG[PC_UART]->US_RCR) );  //move data from queue to PDC buf        
+       
+        counter = kfifo_get_free_space( pUART_Rece_kfifo[PC_UART] );                    
+        while( counter <  UART_PDC_LENGTH - pUARTREG[PC_UART]->US_RCR ) {
+             OSTimeDly(5);
+        }
+        kfifo_put(pUART_Rece_kfifo[PC_UART], pUART_Rece_Buf_PDC[PC_UART] , UART_PDC_LENGTH - pUARTREG[PC_UART]->US_RCR) ;
+        
         pUARTREG[PC_UART]->US_RPR  = (CPU_INT32U) pUART_Rece_Buf_PDC[PC_UART];
         pUARTREG[PC_UART]->US_RCR  = UART_PDC_LENGTH;
         pUARTREG[PC_UART]->US_PTCR = AT91C_PDC_RXTEN;
@@ -465,7 +508,7 @@ void ISR_Ruler_UART( void )
     
     AT91C_BASE_AIC->AIC_IVR = 0;  //?????   /* Write the IVR, as required in Protection Mode */
     status = pUARTREG[RULER_UART]->US_CSR;  
-    
+ 
     if ( status & AT91C_US_ENDTX  )   {  //Transmit INT         
         if( Queue_ReadBuf(  pUART_Send_Buf_PDC[RULER_UART],
                             pUART_Send_Buf[RULER_UART], 

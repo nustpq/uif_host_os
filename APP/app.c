@@ -229,7 +229,7 @@ void  App_BufferCreate (void)
   
     CPU_INT08U  err;
     
-    APP_TRACE_INFO(("Creating Application Buffer...\r\n"));
+    APP_TRACE_INFO(("\r\nCreating Application Buffer...\r\n"));
     
 #if (OS_MEM_EN > 0)
     
@@ -433,35 +433,35 @@ static  void  App_TaskCreate (void)
  
  
  ///////////////////////////////////////////////////////////////////////////////
-    
-     OSTaskCreateExt((void (*)(void *)) App_TaskUART_Tx_Ruler,
-                    (void           *) 0,
-                    (OS_STK         *)&App_TaskUART_TxRulerStk[APP_CFG_TASK_UART_TX_RULER_STK_SIZE - 1],
-                    (INT8U           ) APP_CFG_TASK_UART_TX_RULER_PRIO,
-                    (INT16U          ) APP_CFG_TASK_UART_TX_RULER_PRIO,
-                    (OS_STK         *)&App_TaskUART_TxRulerStk[0],
-                    (INT32U          ) APP_CFG_TASK_UART_TX_RULER_STK_SIZE,
-                    (void *)0,
-                    (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
-
-#if (OS_TASK_NAME_EN > 0)
-    OSTaskNameSet(APP_CFG_TASK_UART_TX_RULER_PRIO, "Uart_tx_ruler", &err);
-#endif
-    
-    
-    OSTaskCreateExt((void (*)(void *)) App_TaskNoah_Ruler,
-                    (void           *) 0,
-                    (OS_STK         *)&App_TaskNoahRulerStk[APP_CFG_TASK_NOAH_RULER_STK_SIZE - 1],
-                    (INT8U           ) APP_CFG_TASK_NOAH_RULER_PRIO,
-                    (INT16U          ) APP_CFG_TASK_NOAH_RULER_PRIO,
-                    (OS_STK         *)&App_TaskNoahRulerStk[0],
-                    (INT32U          ) APP_CFG_TASK_NOAH_RULER_STK_SIZE,
-                    (void *)0,
-                    (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
-
-#if (OS_TASK_NAME_EN > 0)
-    OSTaskNameSet(APP_CFG_TASK_NOAH_RULER_PRIO, "Noah_Ruler", &err);
-#endif
+//    
+//     OSTaskCreateExt((void (*)(void *)) App_TaskUART_Tx_Ruler,
+//                    (void           *) 0,
+//                    (OS_STK         *)&App_TaskUART_TxRulerStk[APP_CFG_TASK_UART_TX_RULER_STK_SIZE - 1],
+//                    (INT8U           ) APP_CFG_TASK_UART_TX_RULER_PRIO,
+//                    (INT16U          ) APP_CFG_TASK_UART_TX_RULER_PRIO,
+//                    (OS_STK         *)&App_TaskUART_TxRulerStk[0],
+//                    (INT32U          ) APP_CFG_TASK_UART_TX_RULER_STK_SIZE,
+//                    (void *)0,
+//                    (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+//
+//#if (OS_TASK_NAME_EN > 0)
+//    OSTaskNameSet(APP_CFG_TASK_UART_TX_RULER_PRIO, "Uart_tx_ruler", &err);
+//#endif
+//    
+//    
+//    OSTaskCreateExt((void (*)(void *)) App_TaskNoah_Ruler,
+//                    (void           *) 0,
+//                    (OS_STK         *)&App_TaskNoahRulerStk[APP_CFG_TASK_NOAH_RULER_STK_SIZE - 1],
+//                    (INT8U           ) APP_CFG_TASK_NOAH_RULER_PRIO,
+//                    (INT16U          ) APP_CFG_TASK_NOAH_RULER_PRIO,
+//                    (OS_STK         *)&App_TaskNoahRulerStk[0],
+//                    (INT32U          ) APP_CFG_TASK_NOAH_RULER_STK_SIZE,
+//                    (void *)0,
+//                    (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+//
+//#if (OS_TASK_NAME_EN > 0)
+//    OSTaskNameSet(APP_CFG_TASK_NOAH_RULER_PRIO, "Noah_Ruler", &err);
+//#endif
     
 ////////////////////////////////////////////////////////////////////////////////
     

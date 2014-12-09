@@ -34,13 +34,13 @@
 #define UART0_SEND_QUEUE_LENGTH     1024     //PC
 #define UART0_RECE_QUEUE_LENGTH     1024      
 
-#define UART1_SEND_QUEUE_LENGTH     512     //Ruler
-#define UART1_RECE_QUEUE_LENGTH     512     
+#define UART1_SEND_QUEUE_LENGTH     32     //Ruler
+#define UART1_RECE_QUEUE_LENGTH     32     
 
 #define UART2_SEND_QUEUE_LENGTH     64     //Audio MCU
 #define UART2_RECE_QUEUE_LENGTH     64     
 
-#define UART_PDC_LENGTH             32     // 32B transfer time is ok for a interruption 
+#define UART_PDC_LENGTH             32    // 32B transfer time is ok for a interruption 
 
 #define UART_TIMEOUT_BIT            (50 * 10) // 500 bit=50*10bit,  timeout in 50 Bytes' time, due to IT6322 slow response  
 
@@ -68,6 +68,12 @@ extern CPU_INT32U UART2_Rece_Buf[UART2_RECE_QUEUE_LENGTH/sizeof(CPU_INT32U)];
 
 extern CPU_INT32U * const pUART_Send_Buf[];
 extern CPU_INT32U * const pUART_Rece_Buf[];
+
+extern kfifo_t uart_tx_fifo[];
+extern kfifo_t uart_rx_fifo[];
+
+extern kfifo_t * const pUART_Send_kfifo[];
+extern kfifo_t * const pUART_Rece_kfifo[];
 
 extern CPU_INT08U UART_Init(CPU_INT08U uart_index,   void (*isr_handler)( void ), CPU_INT32U baud);
 extern void ISR_PC_UART( void );
@@ -100,6 +106,7 @@ extern CPU_INT08U USART_Start_Ruler_Bootloader( void );
 
 extern OS_EVENT *DBGU_Tx_Sem_lock;  
 extern OS_EVENT *DBGU_Rx_Sem_lock;
+
 
 #endif
 

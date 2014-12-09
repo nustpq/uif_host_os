@@ -65,7 +65,7 @@ void App_TaskGenieShell( void *p_arg )
     CommandBuf[0] = '\0';    
                 		
     InitCommands();     
-	OSTimeDly(200);
+    OSTimeDly(200);
 	
     /*To be done: Login & Password*/
     UART_SHELL_SEND_STR(( "\n\rLaunching Genieshell, press any to continue..."));	   

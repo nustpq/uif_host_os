@@ -76,7 +76,9 @@ void App_TaskNoah( void *p_arg )
         pTaskMsgIN  = (INT8U *)OSQPend( EVENT_MsgQ_PCUART2Noah, 0, &err );   
         
         if( pTaskMsgIN != NULL && OS_ERR_NONE == err )   {
-           
+            Time_Stamp();
+            APP_TRACE_INFO(("\r\n:App_TaskNoah :  "));
+            
             pCmdBuf  = pTaskMsgIN; // char point to the data buffer
             pNoahCmd = (NOAH_CMD *)pCmdBuf ; //change to NOAH_CMD type
             rxID     = GET_FRAME_ID( pNoahCmd->head ) ; //get frame ID, index       
@@ -176,7 +178,10 @@ void App_TaskNoah( void *p_arg )
                 break ;              
             } 
             
-            //release mem             
+            //release mem 
+
+            Time_Stamp();
+            APP_TRACE_INFO(("\r\n:App_TaskNoah : end"));            
            
         }         
          

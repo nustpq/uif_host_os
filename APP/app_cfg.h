@@ -53,12 +53,12 @@
 */
 
 
-#define  APP_CFG_TASK_UART_TX_PRIO                         2
-#define  APP_CFG_TASK_UART_TX_RULER_PRIO                   3
-#define  APP_CFG_TASK_UART_RX_PRIO                         4
-#define  APP_CFG_TASK_NOAH_PRIO                            5
-#define  APP_CFG_TASK_NOAH_RULER_PRIO                      6
-#define  APP_CFG_TASK_CMD_PARSE_PRIO                       8
+#define  APP_CFG_TASK_UART_TX_PRIO                         4//1
+#define  APP_CFG_TASK_UART_TX_RULER_PRIO                   13
+#define  APP_CFG_TASK_UART_RX_PRIO                         3
+#define  APP_CFG_TASK_NOAH_PRIO                            2
+#define  APP_CFG_TASK_NOAH_RULER_PRIO                      16
+#define  APP_CFG_TASK_CMD_PARSE_PRIO                       1//8
 
 
 #define  APP_CFG_TASK_USER_IF_PRIO                         10
@@ -90,7 +90,7 @@
 
 #define  APP_CFG_TASK_UART_TX_STK_SIZE                   128
 #define  APP_CFG_TASK_UART_TX_RULER_STK_SIZE             128
-#define  APP_CFG_TASK_UART_RX_STK_SIZE                   128
+#define  APP_CFG_TASK_UART_RX_STK_SIZE                   256//128
 #define  APP_CFG_TASK_NOAH_STK_SIZE                      128
 #define  APP_CFG_TASK_NOAH_RULER_STK_SIZE                128
 #define  APP_CFG_TASK_CMD_PARSE_STK_SIZE                 256
@@ -154,7 +154,7 @@
 #define  BSP_TRACE_DBG(x)             ((BSP_CFG_TRACE_LEVEL  >= TRACE_LEVEL_DBG)   ? (void)(BSP_CFG_TRACE x) : (void)0)
 
 ////////////////////////////////////////////////////////////////
-#define  APP_CFG_TRACE_LEVEL           TRACE_LEVEL_INFO     //PQ
+#define  APP_CFG_TRACE_LEVEL          TRACE_LEVEL_INFO     //PQ
 
 #define  APP_CFG_TRACE                 BSP_Ser_Printf   ////Disable here is use uC Probe  
 #define  APP_TRACE_INFO(x)            ((APP_CFG_TRACE_LEVEL  >= TRACE_LEVEL_INFO)  ? (void)(APP_CFG_TRACE x) : (void)0)

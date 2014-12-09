@@ -190,6 +190,9 @@ void  Noah_CMD_Read (CMDREAD    *pCMD_Read,
                 } else {  
                    OSMemPut( pMEM_Part_MsgUART, pRecvPtr );              
                 }
+                Time_Stamp();
+                APP_TRACE_INFO(("\r\n::::: Noah_CMD_Read post data "));
+              
             }
         break ;
         
@@ -365,7 +368,11 @@ CPU_INT08U  EMB_Data_Check (NOAH_CMD   *pNoahCmd,
     CPU_INT08U   err;
     CPU_INT16U   data_cmd_len;
     CPU_INT08U  *p_data_cmd;
-  
+   
+    //Time_Stamp();                      
+    //APP_TRACE_INFO(("\r\n::::: EMB_Data_Check "));
+           
+            
     err          = NO_ERR;
     p_data_cmd   = pNoahCmd->Data ;
     data_cmd_len = pNoahCmd->DataLen ;   
@@ -408,6 +415,10 @@ CPU_INT08U  EMB_Data_Check (NOAH_CMD   *pNoahCmd,
         }
         
     }
+    
+    //Time_Stamp();
+    //APP_TRACE_INFO(("\r\n::::: EMB_Data_Check end "));
+
     
     return err;
   
@@ -734,6 +745,9 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
         break ;
         
         case PC_CMD_RAW_WRITE :
+            Time_Stamp();
+            APP_TRACE_INFO(("\r\n::::: PC_CMD_RAW_WRITE "));
+            
             Send_DACK(err);            
             temp = emb_get_attr_int(&root, 1, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
@@ -749,6 +763,9 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             PCCmd.raw_write.pdata = (CPU_INT08U *)pBin; 
             err = Raw_Write( &PCCmd.raw_write );
             Send_GACK(err);
+            Time_Stamp();
+            APP_TRACE_INFO(("\r\n::::: PC_CMD_RAW_WRITE end "));
+        
         break ;
         
         case PC_CMD_RAW_READ :

@@ -179,7 +179,7 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
     
     APP_TRACE_INFO(("\r\nRaw_Write: if_type=%d, dev_addr=0x%02X, data_len=%d ",\
                          p_raw_write->if_type,p_raw_write->dev_addr,p_raw_write->data_len));    
-    Dump_Data( p_raw_write->pdata,  p_raw_write->data_len );    
+    //Dump_Data( p_raw_write->pdata,  p_raw_write->data_len );    
     
     err = NO_ERR;
     pChar  = p_raw_write->pdata ;

@@ -898,6 +898,10 @@ void  OSTimeTick (void)
             return;
         }
 #endif
+//        if( (OSTime % 4) != 0 ) { //PQ add
+//            return;
+//        }
+        
         ptcb = OSTCBList;                                  /* Point at first TCB in TCB list               */
         while (ptcb->OSTCBPrio != OS_TASK_IDLE_PRIO) {     /* Go through all TCBs in TCB list              */
             OS_ENTER_CRITICAL();

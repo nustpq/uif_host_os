@@ -44,7 +44,7 @@
 /*
 *********************************      Version Declaration       ****************************************
 */
-const CPU_CHAR fw_version[]  = "[FW:H:V0.5]"; //fixed size string
+const CPU_CHAR fw_version[]  = "[FW:H:V0.51]"; //fixed size string
 
 #ifdef  BOARD_TYPE_AB01
 const CPU_CHAR hw_version[]  = "[HW:V1.0]"; 
@@ -2244,8 +2244,8 @@ void Get_Run_Time( void )
     INT8U  sec ;
     INT8U  min ;
     INT8U  hour ;
-    INT8U  day ;
-  
+    INT8U  day ;   
+    
     time = OSTime / 1000L ;
     sec  = time % 60 ;
     min  = time / 60 %60 ;
@@ -2253,10 +2253,28 @@ void Get_Run_Time( void )
     day  = time / 3600 / 24 ;
     
     APP_TRACE_INFO(("OS Running Time  =  %02d days : %02d hours : %02d min : %02d sec\r\n", day,hour,min, sec )); 
-   
-    
+
 }
 
+
+void Time_Stamp( void )
+{  
+    
+    INT32U time   ;
+    INT8U  sec ;
+    INT8U  min ;
+    INT8U  hour ;
+    INT16U  msec ;
+    
+    msec = OSTime % 1000L ;
+    time = OSTime / 1000L ;
+    sec  = time % 60 ;
+    min  = time / 60 %60 ;
+    hour = time / 3600 % 24 ;
+    
+    APP_TRACE_INFO(("\r\n[%02d:%02d:%02d.%03d] ", hour,min, sec, msec )); 
+
+}
 
 /*
 *********************************************************************************************************

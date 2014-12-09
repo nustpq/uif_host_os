@@ -57,6 +57,7 @@
 #include  <probe_com_cfg.h>
 
 #include  <taskcomm.h>
+#include  <kfifo.h>
 #include  <board.h>
 #include  <uart.h>
 #include  <pio.h>
@@ -77,6 +78,7 @@
 #include  <commands.h>
 #include  <codec.h>
 #include  <xmodem.h>
+
 
 /*
 *********************************************************************************************************
@@ -390,7 +392,7 @@ extern void Head_Info( void );
 extern void Beep( INT32U beep_cycles);
 extern volatile CPU_INT08U  Flag_Reset_Pin_Trigger;
 //extern void PDM_Pattern_Gen( INT8U type );
-
+extern void Time_Stamp( void );
 
 
 #endif                                                          /* End of bsp module include.                         */

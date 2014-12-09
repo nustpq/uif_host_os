@@ -1042,6 +1042,12 @@
       <name>$PROJ_DIR$\..\BSP\cstartup.s</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\Noah\kfifo.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Noah\kfifo.h</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\BSP\Xmodem.c</name>
     </file>
     <file>
