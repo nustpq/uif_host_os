@@ -76,9 +76,9 @@ void App_TaskNoah( void *p_arg )
         pTaskMsgIN  = (INT8U *)OSQPend( EVENT_MsgQ_PCUART2Noah, 0, &err );   
         
         if( pTaskMsgIN != NULL && OS_ERR_NONE == err )   {
-            Time_Stamp();
-            APP_TRACE_INFO(("\r\n:App_TaskNoah :  "));
-            
+//            Time_Stamp();
+//            APP_TRACE_INFO(("\r\n:App_TaskNoah :  "));
+//            
             pCmdBuf  = pTaskMsgIN; // char point to the data buffer
             pNoahCmd = (NOAH_CMD *)pCmdBuf ; //change to NOAH_CMD type
             rxID     = GET_FRAME_ID( pNoahCmd->head ) ; //get frame ID, index       
@@ -127,7 +127,8 @@ void App_TaskNoah( void *p_arg )
                     pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, SET_FRAME_HEAD(rxID,FRAM_TYPE_ESTA), NULL, 0, 1, NULL, 0 ) ;  // ESTA                      
                     OSSemPost(ACK_Sem_PCUART);  //end the resend pending--                     
                     OSTimeDly(10); //wait for the TX buffer is empty 
-                    while( Queue_NData(pUART_Send_Buf[PC_UART]) >0 ) {
+                    //while( Queue_NData(pUART_Send_Buf[PC_UART]) >0 ) {
+                    while( kfifo_get_data_size(pUART_Send_kfifo[PC_UART]) ) {
                         OSTimeDly(1);                          
                     }                     
                     OSSemSet(ACK_Sem_PCUART, 0, &err);// clear the sem
@@ -180,8 +181,8 @@ void App_TaskNoah( void *p_arg )
             
             //release mem 
 
-            Time_Stamp();
-            APP_TRACE_INFO(("\r\n:App_TaskNoah : end"));            
+//            Time_Stamp();
+//            APP_TRACE_INFO(("\r\n:App_TaskNoah : end"));            
            
         }         
          

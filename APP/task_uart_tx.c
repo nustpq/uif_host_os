@@ -86,8 +86,8 @@ void App_TaskUART_Tx( void *p_arg )
         pTaskMsgIN   = (INT8U *)OSQPend( EVENT_MsgQ_Noah2PCUART, 0, &errCode );
         
         if( pTaskMsgIN != NULL && OS_ERR_NONE == errCode )   {  
-            Time_Stamp();
-            APP_TRACE_INFO(("\r\n:App_TaskUART_Tx : [%d] start ",pPcCmd->DataLen + 5));
+//            Time_Stamp();
+//            APP_TRACE_INFO(("\r\n:App_TaskUART_Tx : [%d] start ",pPcCmd->DataLen + 5));
                     
             pPcCmd  = (NOAH_CMD *)pTaskMsgIN ;             
             if( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_DATA  ) {  //data frame
@@ -150,8 +150,8 @@ void App_TaskUART_Tx( void *p_arg )
                     UART_WriteStart( PC_UART ); //send data 
                     APP_TRACE_DBG(("\r\n>ACK"));
             } 
-             Time_Stamp();
-             APP_TRACE_INFO(("\r\n:App_TaskUART_Tx : end "));
+//             Time_Stamp();
+//             APP_TRACE_INFO(("\r\n:App_TaskUART_Tx : end "));
          
         }  
         

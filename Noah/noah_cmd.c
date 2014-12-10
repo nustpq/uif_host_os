@@ -190,8 +190,8 @@ void  Noah_CMD_Read (CMDREAD    *pCMD_Read,
                 } else {  
                    OSMemPut( pMEM_Part_MsgUART, pRecvPtr );              
                 }
-                Time_Stamp();
-                APP_TRACE_INFO(("\r\n::::: Noah_CMD_Read post data "));
+//                Time_Stamp();
+//                APP_TRACE_INFO(("\r\n::::: Noah_CMD_Read post data "));
               
             }
         break ;
@@ -677,6 +677,9 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
     emb_attach( &(pEBuf_Cmd->data[0]), pEBuf_Cmd->length, &root );        
     cmd_type = emb_get_id(&root);   
     
+//    Time_Stamp();
+//    APP_TRACE_INFO(("\r\n::::: EMB_Data_Parse: cmd type=%d ",cmd_type));
+  
     switch( cmd_type )  {
         
         case PC_CMD_SET_AUDIO_CFG : 
@@ -745,9 +748,9 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
         break ;
         
         case PC_CMD_RAW_WRITE :
-            Time_Stamp();
-            APP_TRACE_INFO(("\r\n::::: PC_CMD_RAW_WRITE "));
-            
+//            Time_Stamp();
+//            APP_TRACE_INFO(("\r\n::::: PC_CMD_RAW_WRITE "));
+//            
             Send_DACK(err);            
             temp = emb_get_attr_int(&root, 1, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
@@ -763,8 +766,8 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             PCCmd.raw_write.pdata = (CPU_INT08U *)pBin; 
             err = Raw_Write( &PCCmd.raw_write );
             Send_GACK(err);
-            Time_Stamp();
-            APP_TRACE_INFO(("\r\n::::: PC_CMD_RAW_WRITE end "));
+//            Time_Stamp();
+//            APP_TRACE_INFO(("\r\n::::: PC_CMD_RAW_WRITE end "));
         
         break ;
         

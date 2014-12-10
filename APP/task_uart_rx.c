@@ -82,10 +82,10 @@ void App_TaskUART_Rx( void *p_arg )
         }
         
         if( counter ) {
-             APP_TRACE_INFO(("\r\n\r\n---"));
-             Time_Stamp();
-             APP_TRACE_INFO(("\r\n:App_TaskUART_Rx check: [%d]start",counter));        
-           
+//             APP_TRACE_INFO(("\r\n\r\n---"));
+//             Time_Stamp();
+//             APP_TRACE_INFO(("\r\n:App_TaskUART_Rx check: [%d]start",counter));        
+//           
              //Queue_ReadBuf( rx_data, pUART_Rece_Buf[PC_UART], counter > 256 ? 256 : counter , &temp );
              counter = counter < 256 ? counter : 256;
              kfifo_get(pUART_Rece_kfifo[PC_UART], (unsigned char *)rx_data, counter) ; 
@@ -100,9 +100,9 @@ void App_TaskUART_Rx( void *p_arg )
 //            
 //		}  
           
-             Time_Stamp();
-             APP_TRACE_INFO(("\r\n:App_TaskUART_Rx check: end "));
-         
+//             Time_Stamp();
+//             APP_TRACE_INFO(("\r\n:App_TaskUART_Rx check: end "));
+//         
          
              
         }
