@@ -19,7 +19,9 @@
 #define   UIF_TYPE_GPIO    3
 
 
-#define   ATTRI_IM401_LOAD_CODE   41
+#define   ATTRI_IM401_LOAD_CODE            41
+#define   ATTRI_FM1388_LOAD_CODE           31
+#define   FM1388_ALLOWED_DATA_PACK_SIZE    246
 
 
 extern unsigned char Reg_RW_Data[];

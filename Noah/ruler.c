@@ -218,12 +218,12 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
     } else {
          mic_num = Global_Mic_Mask[0]; //save mic num to ruler0
     }
-#else    
+#endif   
     if ( (pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask != 0) ) {         
          buf[4] += 2; //add 2 channel  
          APP_TRACE_INFO(("Lin 2 channels added...%d\r\n",buf[4])); 
     }
-#endif
+
     
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf, sizeof(buf)) ; 

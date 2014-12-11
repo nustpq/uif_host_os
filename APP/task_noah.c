@@ -36,6 +36,9 @@
 OS_EVENT            *ACK_Sem_PCUART;
 volatile CPU_INT08U  Global_Conn_Ready = 0 ; //PC connection on/off state
 
+extern EMB_BUF   Emb_Buf_Cmd;
+extern EMB_BUF   Emb_Buf_Data;
+
 /*
 *********************************************************************************************************
 *                                    App_TaskNoah()
@@ -78,7 +81,7 @@ void App_TaskNoah( void *p_arg )
         if( pTaskMsgIN != NULL && OS_ERR_NONE == err )   {
 //            Time_Stamp();
 //            APP_TRACE_INFO(("\r\n:App_TaskNoah :  "));
-//            
+            
             pCmdBuf  = pTaskMsgIN; // char point to the data buffer
             pNoahCmd = (NOAH_CMD *)pCmdBuf ; //change to NOAH_CMD type
             rxID     = GET_FRAME_ID( pNoahCmd->head ) ; //get frame ID, index       
@@ -131,13 +134,15 @@ void App_TaskNoah( void *p_arg )
                     while( kfifo_get_data_size(pUART_Send_kfifo[PC_UART]) ) {
                         OSTimeDly(1);                          
                     }                     
-                    OSSemSet(ACK_Sem_PCUART, 0, &err);// clear the sem
-                    
-                case FRAM_TYPE_ESTA :
+                    OSSemSet(ACK_Sem_PCUART, 0, &err);// clear the sem                 
+                 case FRAM_TYPE_ESTA :
                   
                     PcCmdRxID = 0xC0 ; // ? why 0x40  make sure there can be many same setup frame
                     PcCmdTxID = rxID ; //                    
                     
+                    Init_EMB_BUF( &Emb_Buf_Data ); //need reset this when Noah connection reset
+                    Init_EMB_BUF( &Emb_Buf_Cmd ); //need reset this when Noah connection reset
+
                     //Reset all UART CMD related buffer and release mem 
                     do{  //reset mem used by  EVENT_MsgQ_Noah2PCUART                    
                         pMsg   = (INT8U *)OSQAccept( EVENT_MsgQ_Noah2PCUART, &err );

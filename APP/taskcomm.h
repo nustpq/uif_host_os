@@ -76,6 +76,7 @@ extern OS_EVENT *ACK_Sem_RulerUART;
 extern OS_EVENT *Done_Sem_RulerUART;
 extern OS_EVENT *UART_MUX_Sem_lock;
 
+
 extern void App_TaskUART_Tx      ( void *pdata ) ;
 extern void App_TaskUART_Tx_Ruler( void *pdata ) ;
 extern void App_TaskUART_Rx      ( void *pdata ) ;

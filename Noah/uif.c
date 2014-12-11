@@ -68,6 +68,8 @@ void Reverse_Endian( unsigned char *pdata, unsigned char size )
 */
 void Dump_Data ( unsigned char *pdata, unsigned int size )
 {
+
+#if( false )
     unsigned int i ;
     
     if( size == 0 ) {  
@@ -84,7 +86,7 @@ void Dump_Data ( unsigned char *pdata, unsigned int size )
     }  
     
     APP_TRACE_INFO(("\r\n---------------------------------------------------------------\r\n"));
-
+#endif
 }
 
 /*
@@ -112,12 +114,19 @@ unsigned char Setup_Interface( INTERFACE_CFG *pInterface_Cfg )
     err = NULL;
     temp  = pInterface_Cfg->speed ;
     
+    if( (Global_UIF_Setting[ pInterface_Cfg->if_type - 1 ].attribute == pInterface_Cfg->attribute) &&
+        (Global_UIF_Setting[ pInterface_Cfg->if_type - 1 ].if_type   == pInterface_Cfg->if_type) &&
+        (Global_UIF_Setting[ pInterface_Cfg->if_type - 1 ].speed     == pInterface_Cfg->speed) ) {
+            APP_TRACE_INFO(("\r\nNo need to set same interface\r\n"));
+            return err;
+    }
+            
     switch( pInterface_Cfg->if_type )  {
         
         case UIF_TYPE_I2C :
             if( temp <= 400 && temp >= 10) { 
                 TWI_Init( temp * 1000 );     
-                APP_TRACE_INFO(("\r\nI2C port is re-initialized to %d kHz\r\n",temp));        
+                APP_TRACE_INFO(("\r\nI2C port is set to %d kHz\r\n",temp));        
             }  else {
                 APP_TRACE_INFO(("\r\nERROR: I2C speed not support %d kHz\r\n",temp));
                 err = SET_I2C_ERR ;
@@ -127,7 +136,7 @@ unsigned char Setup_Interface( INTERFACE_CFG *pInterface_Cfg )
         case UIF_TYPE_SPI :  
             if( temp <= 1000 && temp >= 10) {  
                 SPI_Init(  temp * 1000, pInterface_Cfg->attribute );    
-                APP_TRACE_INFO(("\r\nSPI port is re-initialized to %d kHz \r\n",temp));        
+                APP_TRACE_INFO(("\r\nSPI port is set to %d kHz \r\n",temp));        
             }  else {
                 APP_TRACE_INFO(("\r\nERROR: SPI speed not support %d kHz\r\n",temp));
                 err= SET_SPI_ERR ;
@@ -175,11 +184,11 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
     unsigned char  state, err;
     unsigned char  buf[5] ; 
     unsigned char *pChar;
-    unsigned int   size;
+    unsigned int   i, size;
     
-//    APP_TRACE_INFO(("\r\nRaw_Write: if_type=%d, dev_addr=0x%02X, data_len=%d ",\
-//                         p_raw_write->if_type,p_raw_write->dev_addr,p_raw_write->data_len));    
-//    //Dump_Data( p_raw_write->pdata,  p_raw_write->data_len );    
+    APP_TRACE_INFO(("\r\nRaw_Write: if_type=%d, dev_addr=0x%02X, data_len=%d ",\
+                         p_raw_write->if_type,p_raw_write->dev_addr,p_raw_write->data_len));    
+    Dump_Data( p_raw_write->pdata,  p_raw_write->data_len );    
     
     err = NO_ERR;
     pChar  = p_raw_write->pdata ;
@@ -234,10 +243,31 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
         break;
         
         case UIF_TYPE_SPI:
-              state =  SPI_WriteBuffer_API( p_raw_write->pdata, p_raw_write->data_len );              
-              if (state != SUCCESS) {
-                  err = SPI_BUS_ERR;
+              if( Global_UIF_Setting[p_raw_write->if_type - 1 ].attribute == ATTRI_FM1388_LOAD_CODE ) {
+                  size = p_raw_write->data_len / FM1388_ALLOWED_DATA_PACK_SIZE ;                
+                  for( i = 0 ; i < size ; i++ ) {
+                      state =  SPI_WriteBuffer_API( p_raw_write->pdata, FM1388_ALLOWED_DATA_PACK_SIZE );              
+                      if (state != SUCCESS) {
+                          err = SPI_BUS_ERR;
+                          return err;
+                      }
+                      p_raw_write->pdata += FM1388_ALLOWED_DATA_PACK_SIZE;
+                      
+                      OSTimeDly(1); 
+                  }
+                  size = p_raw_write->data_len  % 246 ;
+                  if( size ) {
+                      state =  SPI_WriteBuffer_API( p_raw_write->pdata, size);              
+                      if (state != SUCCESS) {
+                          err = SPI_BUS_ERR;
+                      }
+                  }
                   
+              } else {
+                  state =  SPI_WriteBuffer_API( p_raw_write->pdata, p_raw_write->data_len );              
+                  if (state != SUCCESS) {
+                      err = SPI_BUS_ERR;
+                  }
               } 
         break;
         
@@ -278,11 +308,11 @@ unsigned char Raw_Read( RAW_READ *p_raw_read )
     err  = NO_ERR;
     pbuf = (unsigned char *)Reg_RW_Data;
     
-//    APP_TRACE_INFO(("\r\nRaw_Read:  if_type=%d, dev_addr=0x%02X, data_len_read=%d, data_len_write=%d ",\
-//                         p_raw_read->if_type,p_raw_read->dev_addr,p_raw_read->data_len_read,p_raw_read->data_len_write ));
-//    
-//    Dump_Data( p_raw_read->pdata_write,  p_raw_read->data_len_write );
-//    
+    APP_TRACE_INFO(("\r\nRaw_Read:  if_type=%d, dev_addr=0x%02X, data_len_read=%d, data_len_write=%d ",\
+                         p_raw_read->if_type,p_raw_read->dev_addr,p_raw_read->data_len_read,p_raw_read->data_len_write ));
+    
+    Dump_Data( p_raw_read->pdata_write,  p_raw_read->data_len_write );
+    
     switch( p_raw_read->if_type ) {
         
         case UIF_TYPE_I2C:

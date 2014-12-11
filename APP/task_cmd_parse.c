@@ -81,7 +81,6 @@ void App_TaskCMDParse( void *p_arg )
        
             pNoahCmd  = (NOAH_CMD *)pTaskMsgIN ; //change to NOAH CMD type              
           
-            APP_TRACE_DBG((">"));    
             err = EMB_Data_Check( pNoahCmd, pEBuf, 0 ); 
             OSMemPut( pMEM_Part_MsgUART, pTaskMsgIN );  //release mem
             if( err == OS_ERR_NONE ) {
