@@ -111,16 +111,21 @@ unsigned char Setup_Interface( INTERFACE_CFG *pInterface_Cfg )
     APP_TRACE_INFO(("\r\nSetup_Interface: if_type=%d, speed=%dkHz, attribute=0x%X ",\
                          pInterface_Cfg->if_type,pInterface_Cfg->speed, pInterface_Cfg->attribute));
     
-    err = NULL;
+    err   = NULL;
     temp  = pInterface_Cfg->speed ;
     
-    if( (Global_UIF_Setting[ pInterface_Cfg->if_type - 1 ].attribute == pInterface_Cfg->attribute) &&
-        (Global_UIF_Setting[ pInterface_Cfg->if_type - 1 ].if_type   == pInterface_Cfg->if_type) &&
-        (Global_UIF_Setting[ pInterface_Cfg->if_type - 1 ].speed     == pInterface_Cfg->speed) ) {
+    if(  (Global_UIF_Setting[ pInterface_Cfg->if_type - 1 ].speed     == pInterface_Cfg->speed) &&
+         (Global_UIF_Setting[ pInterface_Cfg->if_type - 1 ].if_type   == pInterface_Cfg->if_type) )  {
+       
+        if( Global_UIF_Setting[ pInterface_Cfg->if_type - 1 ].attribute  == pInterface_Cfg->attribute ) {
             APP_TRACE_INFO(("\r\nNo need to set same interface\r\n"));
-            return err;
+        } else {
+            Global_UIF_Setting[ pInterface_Cfg->if_type - 1 ].attribute = pInterface_Cfg->attribute;
+            APP_TRACE_INFO(("\r\nChanged the interface attribute!\r\n"));
+        }    
+        return err;
     }
-            
+       
     switch( pInterface_Cfg->if_type )  {
         
         case UIF_TYPE_I2C :
@@ -140,8 +145,7 @@ unsigned char Setup_Interface( INTERFACE_CFG *pInterface_Cfg )
             }  else {
                 APP_TRACE_INFO(("\r\nERROR: SPI speed not support %d kHz\r\n",temp));
                 err= SET_SPI_ERR ;
-            } 
-             
+            }              
         break 
             ;
         case UIF_TYPE_GPIO :       
@@ -198,7 +202,6 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
         case UIF_TYPE_I2C:  
         
             if( Global_UIF_Setting[p_raw_write->if_type - 1 ].attribute == ATTRI_IM401_LOAD_CODE ) {
-                  
                 OSTimeDly(1); 
                 
                 buf[0] = 0xF0;
@@ -232,8 +235,25 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
                     //OSTimeDly(1); 
                 }
                 
-            } else  { 
+            } else if( Global_UIF_Setting[p_raw_write->if_type - 1 ].attribute == ATTRI_FM1388_LOAD_EEPROM) { 
+                size = p_raw_write->data_len / EEPROM_ALLOWED_DATA_PACK_SIZE ;       
+                for( i = 0 ; i < size ; i++ ) { 
+                    state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, p_raw_write->pdata, EEPROM_ALLOWED_DATA_PACK_SIZE, NULL );       
+                    if (state != SUCCESS) {
+                        err = I2C_BUS_ERR;                  
+                    } 
+                    p_raw_write->pdata += EEPROM_ALLOWED_DATA_PACK_SIZE;                    
+                    OSTimeDly(5);  //EEPROM page write wait time = 5ms                   
+                }
+                size = p_raw_write->data_len % EEPROM_ALLOWED_DATA_PACK_SIZE ; 
+                if( size ) {
+                    state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, p_raw_write->pdata, size, NULL );       
+                    if (state != SUCCESS) {
+                        err = I2C_BUS_ERR;
+                    }
+                 }
                 
+            } else {                
               state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, p_raw_write->pdata, p_raw_write->data_len, NULL );       
               if (state != SUCCESS) {
                   err = I2C_BUS_ERR;                  

@@ -21,8 +21,9 @@
 
 #define   ATTRI_IM401_LOAD_CODE            41
 #define   ATTRI_FM1388_LOAD_CODE           31
-#define   FM1388_ALLOWED_DATA_PACK_SIZE    246
-
+#define   ATTRI_FM1388_LOAD_EEPROM         21
+#define   FM1388_ALLOWED_DATA_PACK_SIZE    (240+6)
+#define   EEPROM_ALLOWED_DATA_PACK_SIZE    (128+2)
 
 extern unsigned char Reg_RW_Data[];
 
