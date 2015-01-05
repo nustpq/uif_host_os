@@ -393,6 +393,7 @@ extern void Beep( INT32U beep_cycles);
 extern volatile CPU_INT08U  Flag_Reset_Pin_Trigger;
 //extern void PDM_Pattern_Gen( INT8U type );
 extern void Time_Stamp( void );
+extern void  Get_Flash_Info (void);
 
 
 #endif                                                          /* End of bsp module include.                         */

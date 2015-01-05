@@ -125,6 +125,12 @@ void InitCommands( void )
 	pShell->CommandFunc = Write_Ruler_FW;
     pShell->help = "Update ruler firmware. {cmd ruler_id}\n\reg: rulerfw 0";
     pShell++;
+    
+    pShell->num  = cmd_index++;
+	pShell->name = "flash";
+	pShell->CommandFunc = Flash_Info;
+    pShell->help = "List flash saved data info.";
+    pShell++;
 }
 
 
@@ -670,6 +676,21 @@ CPU_INT08U Get_Ver_Info( CPU_INT08U argc,CPU_CHAR **argv )
 
 
 
+
+CPU_INT08U Flash_Info( CPU_INT08U argc,CPU_CHAR **argv )
+{   
+ 
+    Get_Flash_Info();
+    Buzzer_OnOff(1); //buzzer on   
+    OSTimeDly(10 );  
+    Buzzer_OnOff(0); //buzzer off
+    OSTimeDly(30);
+    Buzzer_OnOff(1); //buzzer on   
+    OSTimeDly(10);  
+    Buzzer_OnOff(0); //buzzer off
+    
+    return 0;    
+}
 
 
 CPU_INT08U CommandParse( CPU_CHAR *Buf, CPU_INT08U *p_argc, CPU_CHAR *argv[] )

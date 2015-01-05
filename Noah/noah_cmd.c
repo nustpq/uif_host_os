@@ -867,10 +867,25 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             pBin = emb_get_attr_binary(&root, 3, (int*)&temp);
             if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }
             PCCmd.mcu_flash.pdata = (CPU_INT08U *)pBin;
-             pBin = emb_get_attr_binary(&root, 4, (int*)&temp);
+            pBin = emb_get_attr_binary(&root, 4, (int*)&temp);
             if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }
             PCCmd.mcu_flash.pStr = (CPU_INT08U *)pBin;          
             err = Save_DSP_VEC(  &PCCmd.mcu_flash );    
+            Send_GACK(err);
+        break ;
+        
+        case PC_CMD_SET_VEC_CFG :
+            Send_DACK(err);            
+            temp = emb_get_attr_int(&root, 1, -1);
+            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.set_vec_cfg.vec_index_a = (CPU_INT08U)temp;             
+            temp = emb_get_attr_int(&root, 2, -1);
+            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.set_vec_cfg.vec_index_b = (CPU_INT08U)temp;
+            temp = emb_get_attr_int(&root, 3, -1);
+            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.set_vec_cfg.delay = (CPU_INT32U)temp;                
+            err = Set_DSP_VEC(  &PCCmd.set_vec_cfg );    
             Send_GACK(err);
         break ;
         ////////////////////////////////////////////////////////////////////////        

@@ -5,7 +5,7 @@
 
 
 
-#define MAX_COMMAND_NUM            19
+#define MAX_COMMAND_NUM            20
 #define MAX_COMMAND_NAME_LENGTH    20
 #define ERRORCOMMAND              255
 #define MaxLenComBuf	          100
@@ -44,4 +44,5 @@ CPU_INT08U WriteCMFunc( CPU_INT08U argc,CPU_CHAR **argv );
 CPU_INT08U ReadCMFunc( CPU_INT08U argc,CPU_CHAR **argv );
 CPU_INT08U Get_Ver_Info( CPU_INT08U argc,CPU_CHAR **argv );
 CPU_INT08U Write_Ruler_FW( CPU_INT08U argc,CPU_CHAR **argv );
+CPU_INT08U Flash_Info( CPU_INT08U argc,CPU_CHAR **argv );
 #endif 

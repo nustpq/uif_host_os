@@ -213,15 +213,14 @@ unsigned char TWID_Read      (
   
     AT91S_TWI *pTwi ;
     AsyncTwi *pTransfer;
-    unsigned int timeout;
-    unsigned char err;    
+    unsigned int timeout;    
     unsigned char state; 
         
     //pAsync    = &twi_async; //force use async
     pTwi      = twid.pTwi; 
     pTransfer = (AsyncTwi *)twid.pTransfer; 
     state     = TWID_NO_ERROR;
-    
+ 
     if( (num == 0) && (isize == 0) ) {
         return state;
     }
@@ -264,7 +263,7 @@ unsigned char TWID_Read      (
            //TRACE_ERROR("TWID Timeout BS\n\r");             
             state =  TWID_ERROR_TIMEOUT;                 
             TWI_DisableIt(pTwi, AT91C_TWI_TXRDY | AT91C_TWI_RXRDY | AT91C_TWI_TXCOMP | AT91C_TWI_NACK ); 
-            APP_TRACE_INFO(("\r\nTWI error: %d\r\n",err));
+            APP_TRACE_INFO(("\r\nTWI error: %d\r\n",state));
         }
         state          = pTransfer->status ;
         twid.pTransfer = NULL;
@@ -276,7 +275,7 @@ unsigned char TWID_Read      (
 #if OS_CRITICAL_METHOD == 3u                     /* Allocate storage for CPU status register           */
     OS_CPU_SR  cpu_sr = 0u;
 #endif 
-        OSSemPend( TWI_Sem_lock, 0, &err );  
+        OSSemPend( TWI_Sem_lock, 0, &state );  
         OS_ENTER_CRITICAL();
         // Set STOP signal if only one byte is sent
         if (num == 1) {
@@ -338,8 +337,7 @@ unsigned char TWID_Write    (
 {
     AT91S_TWI *pTwi;
     AsyncTwi *pTransfer;
-    unsigned int timeout;
-    unsigned char err;     
+    unsigned int timeout;      
     unsigned char state; 
         
     //pAsync    = &twi_async; //force use async    
@@ -384,7 +382,7 @@ unsigned char TWID_Write    (
            //TRACE_ERROR("TWID Timeout BS\n\r");             
             state =  TWID_ERROR_TIMEOUT;                 
             TWI_DisableIt(pTwi, AT91C_TWI_TXRDY | AT91C_TWI_RXRDY | AT91C_TWI_TXCOMP | AT91C_TWI_NACK ); 
-            APP_TRACE_INFO(("\r\nTWI error: %d\r\n",err));
+            APP_TRACE_INFO(("\r\nTWI error: %d\r\n",state));
         }
         state          =  pTransfer->status ;
         twid.pTransfer =  NULL;
@@ -397,7 +395,7 @@ unsigned char TWID_Write    (
     OS_CPU_SR  cpu_sr = 0u;
 #endif 
         
-        OSSemPend( TWI_Sem_lock, 0, &err ); 
+        OSSemPend( TWI_Sem_lock, 0, &state ); 
         OS_ENTER_CRITICAL();
         // Start write
         TWI_StartWrite(pTwi, address, iaddress, isize, *pData++);

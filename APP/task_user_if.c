@@ -85,7 +85,7 @@ void  App_TaskUserIF (void *p_arg)
             switch( key_state & MSG_TYPE_MASK ) {                
                 case MSG_TYPE_RESET : //reset send msg                
                     //PDM_Pattern_Gen(0); //gen cp2240 pattern
-                    Head_Info();                                   
+                    Head_Info();                   
                 break;
                     
                 case MSG_TYPE_SWITCH ://Switch                
@@ -213,10 +213,11 @@ void  App_TaskUserIF (void *p_arg)
 //                                Global_Ruler_State[ruler_id] = RULER_STATE_DETACHED ;
 //                                Global_Mic_Mask[ruler_id]    = 0 ; 
                                 if( (ruler_id == 0) && (iM401_Ctrl_Enable == 1) ) {
-                                    OSTimeDly(500);
-                                    iM401_Bypass();
-                                    OSTimeDly(3000);
-                                    iM401_Standby();                                    
+                                    //OSTimeDly(500);
+                                    //iM401_Bypass();
+                                    //OSTimeDly(3000);
+                                    //iM401_Standby(); 
+                                    iM401_Load_Vec();
                                 }
                                 
                             } 

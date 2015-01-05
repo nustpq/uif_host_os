@@ -44,6 +44,7 @@ volatile unsigned char  Ruler_Setup_Sync_Data;
 extern EMB_BUF   Emb_Buf_Data;
 extern EMB_BUF   Emb_Buf_Cmd;
 
+SET_VEC_CFG  Global_iM401_VEC_Cfg; 
 
 
 /*
@@ -66,7 +67,8 @@ void Init_Global_Var( void )
         Global_Ruler_Type[ruler_id]  = 0;
         Global_Mic_State[ruler_id]   = 0 ;
         Global_Mic_Mask[ruler_id]    = 0 ;        
-    }   
+    } 
+    
 }
 
 
@@ -1140,6 +1142,9 @@ unsigned char Get_Ruler_Version( unsigned char ruler_slot_id )
 unsigned char FLASHD_Write_Safe( unsigned int address, const void *pBuffer,  unsigned int size)
 {
     unsigned char err;
+    if( size == 0 ) {
+        return 0;
+    }
     if( address < AT91C_IFLASH + AT91C_IFLASH_CODE_SIZE ) {
         APP_TRACE_INFO(("ERROR: this operation wanna flush code area!\r\n"));  
         return FW_BIN_SAVE_ADDR_ERR;
@@ -1308,53 +1313,16 @@ unsigned char Save_DSP_VEC( MCU_FLASH *p_dsp_vec )
     FLASH_INFO   flash_info;
     
     
-    if( (index >= FLASH_ADDR_FW_VEC_NUM) || (p_dsp_vec->data_len > (FLASH_ADDR_FW_VEC_SIZE - AT91C_IFLASH_PAGE_SIZE*FLASH_ADDR_FW_VEC_NUM))  ) {
+    if( (p_dsp_vec->addr_index == 0 ) || (p_dsp_vec->addr_index > FLASH_ADDR_FW_VEC_NUM) || (p_dsp_vec->data_len > FLASH_ADDR_FW_VEC_SIZE )  ) {
         return MCU_FLASH_OP_ERR;
     }
     
-    err = NO_ERR;
-    index = p_dsp_vec->addr_index ;
+    err   = NO_ERR;
+    index = p_dsp_vec->addr_index;
     flash_addr = FLASH_ADDR_FW_VEC + index * FLASH_ADDR_FW_VEC_SIZE;
     
-//    Read_Flash_State(&flash_info, FLASH_ADDR_FW_VEC_STATE + AT91C_IFLASH_PAGE_SIZE * index );
-//     
-//    switch( cmd ) {
-//        case FW_DOWNLAD_CMD_START :
-//            APP_TRACE_INFO(("Start loading ruler bin file to AB01 flash ... \r\n"));
-//            flash_addr = FLASH_ADDR_FW_BIN;                
-//            flash_info.f_w_state = FW_DOWNLAD_STATE_UNFINISHED ;
-//            flash_info.bin_size  = 0;
-//        break;   
-//        case FW_DOWNLAD_CMD_DOING :
-//            APP_TRACE_INFO(("> ")); 
-//            if( flash_info.f_w_state != FW_DOWNLAD_STATE_UNFINISHED ) {
-//                APP_TRACE_INFO(("ERROR: flash state not match!\r\n"));
-//                err  =  FW_BIN_STATE_0_ERR;                
-//            } 
-//        break;
-//        case FW_DOWNLAD_CMD_DONE :
-//            APP_TRACE_INFO((">\r\n")); 
-//            if( flash_info.f_w_state != FW_DOWNLAD_STATE_UNFINISHED ) {
-//                APP_TRACE_INFO(("ERROR: flash state not match!\r\n"));
-//                err  =  FW_BIN_STATE_1_ERR;
-//                break;
-//            }
-//            flash_info.f_w_state = FW_DOWNLAD_STATE_FINISHED ;
-//            flash_info.f_w_counter++;            
-//         break;
-//         
-//         default:
-//            APP_TRACE_INFO(("ERROR:  Save ruler FW bad cmd!\r\n"));
-//            err = FW_BIN_SAVE_CMD_ERR;    
-//         break;
-//        
-//    }
-//    if( err != NO_ERR ) {
-//        return err;
-//    }    
-    
-    
-    
+    Read_Flash_State(&flash_info, FLASH_ADDR_FW_VEC_STATE + AT91C_IFLASH_PAGE_SIZE * index );
+             
     Buzzer_OnOff(1);               
     LED_Toggle(LED_DS2);    
     err = FLASHD_Write_Safe( flash_addr, p_dsp_vec->pdata, p_dsp_vec->data_len ); 
@@ -1362,15 +1330,64 @@ unsigned char Save_DSP_VEC( MCU_FLASH *p_dsp_vec )
     if(err != NO_ERR ) {                     
         APP_TRACE_INFO(("ERROR: Write MCU flash failed!\r\n"));
         return err;
-    } 
+    }
+    if( flash_info.flag != 0x55 ) {
+        flash_info.flag = 0x55;
+        flash_info.f_w_counter = 0;
+        flash_info.s_w_counter = 0;
+    }
+    flash_info.f_w_state = FW_DOWNLAD_STATE_FINISHED ;
+    flash_info.f_w_counter++;
+    flash_info.s_w_counter++;
     flash_info.bin_size   = p_dsp_vec->data_len ;
     strcpy(flash_info.bin_name, (char const*)(p_dsp_vec->pStr)); 
           
     err = Write_Flash_State( &flash_info,  FLASH_ADDR_FW_VEC_STATE + AT91C_IFLASH_PAGE_SIZE * index ); 
     if( err == NO_ERR  ) { 
-        APP_TRACE_INFO(("Vec file[%d Btyes] saved successfully!\r\n",flash_info.bin_size));     
+        APP_TRACE_INFO(("Vec file[%d][%s][%d Btyes] saved successfully!\r\n", index, flash_info.bin_name, flash_info.bin_size));     
     }   
      
+    return err;  
+    
+}
+
+
+
+
+
+
+/*
+*********************************************************************************************************
+*                                       Set_DSP_VEC()
+*
+* Description : Save ruler FW bin file to flash
+*               
+* Argument(s) :  cmd  :  1~ 3.
+*               *pBin : pointer to bin file data packge to be wriiten to flash
+*               *pStr : pointer to file name string
+*                size : bin package file size 
+*
+* Return(s)   : NO_ERR :   execute successfully
+*               others :   =error code .  
+*
+* Note(s)     : Vec size usually not exceed 2kB, so one emb package should be ok.
+*********************************************************************************************************
+*/
+ 
+unsigned char Set_DSP_VEC( SET_VEC_CFG *p_dsp_vec_cfg )
+{  
+    unsigned char err; 
+    
+    err = NO_ERR;
+    
+    if( (p_dsp_vec_cfg->vec_index_a > 7) || (p_dsp_vec_cfg->vec_index_b > 7) || (p_dsp_vec_cfg->delay > 65536 ) ) {
+        Global_iM401_VEC_Cfg.flag        = 0; //means error
+        return FW_VEC_SET_CFG_ERR;
+    }
+    Global_iM401_VEC_Cfg.vec_index_a = p_dsp_vec_cfg->vec_index_a;
+    Global_iM401_VEC_Cfg.vec_index_b = p_dsp_vec_cfg->vec_index_b;
+    Global_iM401_VEC_Cfg.delay       = p_dsp_vec_cfg->delay;    
+    Global_iM401_VEC_Cfg.flag        = 0x55; //means cfg ok
     return err;  
     
 }

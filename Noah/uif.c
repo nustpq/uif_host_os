@@ -32,7 +32,7 @@
 #include <includes.h>
 
 
-INTERFACE_CFG   Global_UIF_Setting[3];     //ruler type = 3
+INTERFACE_CFG   Global_UIF_Setting[4];     //ruler type = 3
 unsigned char   Reg_RW_Data[ EMB_BUF_SIZE ];
 
 
@@ -146,8 +146,12 @@ unsigned char Setup_Interface( INTERFACE_CFG *pInterface_Cfg )
                 APP_TRACE_INFO(("\r\nERROR: SPI speed not support %d kHz\r\n",temp));
                 err= SET_SPI_ERR ;
             }              
-        break 
-            ;
+        break ;
+        
+        case UIF_TYPE_FM36_PATH :       
+            
+        break ;
+        
         case UIF_TYPE_GPIO :       
    
         break ;

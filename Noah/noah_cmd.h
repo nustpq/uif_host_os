@@ -84,6 +84,8 @@
 #define FW_BIN_STATE_1_ERR       213u
 #define FW_BIN_SAVE_CMD_ERR      214u
 #define FW_BIN_SAVE_ADDR_ERR     215u
+#define FW_VEC_SAVE_STATE_ERR    216u
+#define FW_VEC_SET_CFG_ERR       217u
 
 #define FM36_WR_DM_ERR           220u
 #define FM36_WR_PM_ERR           221u
@@ -226,6 +228,7 @@
 #define  PC_CMD_SESSION              35
 #define  PC_CMD_DELAY                36
 #define  PC_CMD_MCU_FLASH_WRITE      40
+#define  PC_CMD_SET_VEC_CFG          41
 
 #define  PC_CMD_DOWNLOAD_RULER_FW    100
 #define  PC_CMD_UPDATE_RULER_FW      101
@@ -300,6 +303,7 @@ typedef union  {
     BURST_WRITE           burst_write;
     BURST_READ            burst_read;
     MCU_FLASH             mcu_flash;
+    SET_VEC_CFG           set_vec_cfg;
 }PCCMDDAT ;
 
 //#pragma pack()

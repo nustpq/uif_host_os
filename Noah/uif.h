@@ -14,19 +14,23 @@
 #define __UIF_H__
 
 
-#define   UIF_TYPE_I2C     1
-#define   UIF_TYPE_SPI     2
-#define   UIF_TYPE_GPIO    3
-
+#define   UIF_TYPE_I2C          1
+#define   UIF_TYPE_SPI          2
+#define   UIF_TYPE_GPIO         3
+#define   UIF_TYPE_FM36_PATH    4
 
 #define   ATTRI_IM401_LOAD_CODE            41
 #define   ATTRI_FM1388_LOAD_CODE           31
 #define   ATTRI_FM1388_LOAD_EEPROM         21
+
 #define   FM1388_ALLOWED_DATA_PACK_SIZE    (240+6)
 #define   EEPROM_ALLOWED_DATA_PACK_SIZE    (128+2)
 
-extern unsigned char Reg_RW_Data[];
+#define   ATTRI_FM36_PATH_NORMAL    0
+#define   ATTRI_FM36_PATH_PWD_BP    1
 
+extern unsigned char Reg_RW_Data[];
+extern INTERFACE_CFG   Global_UIF_Setting[];
 extern void Reverse_Endian( unsigned char *pdata, unsigned char size ) ;
 extern unsigned char Setup_Interface( INTERFACE_CFG *interface_cfg );
 extern unsigned char Raw_Write( RAW_WRITE *p_raw_write );

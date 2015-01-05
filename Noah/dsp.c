@@ -650,7 +650,10 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
         return FM36_CHECK_COUNTER_ERR;
     } 
     
-    FM36_PWD_Bypass();
+    if( Global_UIF_Setting[ UIF_TYPE_FM36_PATH - 1 ].attribute == ATTRI_FM36_PATH_PWD_BP ) {
+        FM36_PWD_Bypass();
+        
+    }
     
     return err;
     
@@ -762,4 +765,66 @@ unsigned char iM401_Bypass( void )
     
     return 0;
     
-} 
+}
+
+////////////////////////////////////////////////////////
+
+unsigned char iM401_Load_Vec( void )
+{     
+    unsigned char err;
+    unsigned char i, index, *pChar;  
+    FLASH_INFO    flash_info;   
+    
+    err = NO_ERR;
+    APP_TRACE_INFO(("\r\nLoad iM401 vec stored in MCU flash...\r\n"));    
+   
+    if( Global_iM401_VEC_Cfg.flag != 0x55 ) {
+        APP_TRACE_INFO(("\r\nvec conf data error!\r\n")); 
+        err = FW_VEC_SET_CFG_ERR;
+        return err;
+    }
+        
+    index = Global_iM401_VEC_Cfg.vec_index_a ;
+    if( index != 0 ) {        
+        Read_Flash_State(&flash_info, FLASH_ADDR_FW_VEC_STATE + AT91C_IFLASH_PAGE_SIZE * index  );
+        if( flash_info.f_w_state != FW_DOWNLAD_STATE_FINISHED ) {
+          err = FW_VEC_SAVE_STATE_ERR;
+          APP_TRACE_INFO(("\r\nvec data state error...\r\n"));
+          return err;
+        }       
+        APP_TRACE_INFO(("Load vec[%d] (%d Bytes) ...\r\n",index,flash_info.bin_size));
+        pChar = (unsigned char *)FLASH_ADDR_FW_VEC + index * FLASH_ADDR_FW_VEC_SIZE;
+        for( i = 0; i < flash_info.bin_size / 3; i++ ) { 
+            err =  TWID_Write(  iM401_I2C_ADDR>>1, 0, 0, pChar + i*3 , 3, NULL);     
+            if ( err != SUCCESS )  {
+                return(I2C_BUS_ERR) ;
+            }
+        } 
+    } 
+    
+    OSTimeDly( Global_iM401_VEC_Cfg.delay );
+
+    index = Global_iM401_VEC_Cfg.vec_index_b ;
+    if( index != 0 ) {        
+        Read_Flash_State(&flash_info, FLASH_ADDR_FW_VEC_STATE + AT91C_IFLASH_PAGE_SIZE * index );
+        if( flash_info.f_w_state != FW_DOWNLAD_STATE_FINISHED ) {
+          err = FW_VEC_SAVE_STATE_ERR;
+          APP_TRACE_INFO(("\r\nvec data state error...\r\n"));
+          return err;
+        }       
+        APP_TRACE_INFO(("Load vec[%d] (%d Bytes) ...\r\n",index,flash_info.bin_size));
+        pChar = (unsigned char *)FLASH_ADDR_FW_VEC + index * FLASH_ADDR_FW_VEC_SIZE;
+        for( i = 0; i < flash_info.bin_size / 3; i++ ) { 
+            err =  TWID_Write(  iM401_I2C_ADDR>>1, 0, 0, pChar + i*3 , 3, NULL);     
+            if ( err != SUCCESS )  {
+                return(I2C_BUS_ERR) ;
+            }
+        } 
+    } 
+    
+    return err;     
+    
+}
+
+
+

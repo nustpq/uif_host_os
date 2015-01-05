@@ -95,9 +95,9 @@
 #define FLASH_ADDR_FW_STATE          ( AT91C_IFLASH + AT91C_IFLASH_CODE_SIZE )  //from 128kB-
 #define FLASH_ADDR_FW_BIN            ( FLASH_ADDR_FW_STATE + AT91C_IFLASH_PAGE_SIZE ) //from 128kB+256
 
-#define FLASH_ADDR_FW_VEC_SIZE       ( 0x4000 ) //16kB
-#define FLASH_ADDR_FW_VEC_NUM        ( 4 )      //64kB = 16kB * 4
-#define FLASH_ADDR_FW_VEC_STATE      ( AT91C_IFLASH + AT91C_IFLASH_CODE_SIZE + FLASH_ADDR_FW_BIN_MAX_SIZE  )
+#define FLASH_ADDR_FW_VEC_SIZE       ( 0x2000 ) //8kB
+#define FLASH_ADDR_FW_VEC_NUM        ( 7 )      //64kB = 8kB * 7+1
+#define FLASH_ADDR_FW_VEC_STATE      ( AT91C_IFLASH + AT91C_IFLASH_CODE_SIZE + FLASH_ADDR_FW_BIN_MAX_SIZE  ) //256*4
 #define FLASH_ADDR_FW_VEC            ( FLASH_ADDR_FW_VEC_STATE + AT91C_IFLASH_PAGE_SIZE * FLASH_ADDR_FW_VEC_NUM ) //from 128kB + 64kB + (0.256*4)kB
 
 
@@ -214,6 +214,7 @@ typedef struct {
     unsigned int    f_w_counter ; //FW bin burn times counter
     unsigned int    s_w_counter ; //state page burn times counter
     unsigned int    bin_size ;
+    unsigned char   flag;
     char            bin_name[30] ; //add
 }FLASH_INFO ;
 
@@ -268,7 +269,14 @@ typedef struct {
     unsigned char*   pdata;
     unsigned char*   pStr;
 }MCU_FLASH ;
-    
+
+typedef struct {
+    unsigned char    vec_index_a;   
+    unsigned char    vec_index_b;
+    unsigned char    flag;
+    unsigned char    reserved;
+    unsigned int     delay; 
+}SET_VEC_CFG ;    
    
 
 extern unsigned char Audio_Version[12];
@@ -283,6 +291,7 @@ extern volatile unsigned char Global_Bridge_POST;
 extern volatile unsigned int  Global_Mic_Mask[];
 extern volatile unsigned char Ruler_Setup_Sync_Data;
 
+extern SET_VEC_CFG  Global_iM401_VEC_Cfg;
 
 extern void          Init_Global_Var( void );
 extern unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg );

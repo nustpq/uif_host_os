@@ -44,7 +44,7 @@
 /*
 *********************************      Version Declaration       ****************************************
 */
-const CPU_CHAR fw_version[]  = "[FW:H:V0.54]"; //fixed size string
+const CPU_CHAR fw_version[]  = "[FW:H:V0.55]"; //fixed size string
 
 #ifdef  BOARD_TYPE_AB01
 const CPU_CHAR hw_version[]  = "[HW:V1.0]"; 
@@ -2275,6 +2275,28 @@ void Time_Stamp( void )
 
 }
 
+
+
+void  Get_Flash_Info (void)
+{
+    unsigned char i = 0;
+    FLASH_INFO flash_info; 
+    
+    APP_TRACE_INFO(("\r\n"));
+    APP_TRACE_INFO(("------------------------------------------------------   Flash INFORMATION   -------------------------------------------------------\r\n"));
+    for(i=0; i<FLASH_ADDR_FW_VEC_NUM; i++ ) {        
+        Read_Flash_State(&flash_info, i==0 ? FLASH_ADDR_FW_STATE : (FLASH_ADDR_FW_VEC_STATE + AT91C_IFLASH_PAGE_SIZE * i) );
+        if(flash_info.flag == 0x55 ) {
+            APP_TRACE_INFO(("------- Flash Seg[%d] >>>\r\n",i)); 
+            APP_TRACE_INFO(("Flash Write Cycle:       State_Page = %d cycles,  Data_Page = %d cycles\r\n", flash_info.s_w_counter,flash_info.f_w_counter ));
+            APP_TRACE_INFO(("Bin File:                \"%s\" (%d Bytes), [0x%0X, %s]\r\n", (flash_info.f_w_state == FW_DOWNLAD_STATE_FINISHED ? flash_info.bin_name : " ?? "), flash_info.bin_size, flash_info.f_w_state,(flash_info.f_w_state == FW_DOWNLAD_STATE_FINISHED ? "OK" : "Error")));
+        }
+    }
+    APP_TRACE_INFO(("------------------------------------------------------------------------------------------------------------------------------------\r\n"));  
+
+}
+
+
 /*
 *********************************************************************************************************
 *                                         Head_Info()
@@ -2292,8 +2314,7 @@ void Time_Stamp( void )
 */
 void Head_Info ( void )
 { 
-    FLASH_INFO flash_info;
-    Read_Flash_State(&flash_info, FLASH_ADDR_FW_STATE );
+        
     APP_TRACE_INFO(("\r\n\r\n")); 
     APP_TRACE_INFO(("-----------------------------------------------------------\r\n"));
     APP_TRACE_INFO(("----                    Fortemedia                    -----\r\n"));
@@ -2319,12 +2340,11 @@ void Head_Info ( void )
     APP_TRACE_INFO(("Global_Ruler_State[3..0]:        [%d - %d - %d - %d]\r\n", Global_Ruler_State[3],Global_Ruler_State[2],Global_Ruler_State[1],Global_Ruler_State[0] ));
     APP_TRACE_INFO(("Global_Ruler_Type[3..0] :        [%X - %X - %X - %X]\r\n", Global_Ruler_Type[3],Global_Ruler_Type[2],Global_Ruler_Type[1],Global_Ruler_Type[0] ));
     APP_TRACE_INFO(("Global_Mic_Mask[3..0][] :        [%X - %X - %X - %X]\r\n", Global_Mic_Mask[3],Global_Mic_Mask[2],Global_Mic_Mask[1],Global_Mic_Mask[0] ));
-    APP_TRACE_INFO(("Flash Write Cycle:       State_Page = %d cycles,  FW_Bin_Page = %d cycles\r\n", flash_info.s_w_counter,flash_info.f_w_counter ));
-    APP_TRACE_INFO(("Ruler FW Bin File:       \"%s\" (%d Bytes), [0x%0X, %s]\r\n", (flash_info.f_w_state == FW_DOWNLAD_STATE_FINISHED ? flash_info.bin_name : " -- "), flash_info.bin_size, flash_info.f_w_state,(flash_info.f_w_state == FW_DOWNLAD_STATE_FINISHED ? "OK" : "Error")));
     APP_TRACE_INFO(("Test Counter:            test_counter1, 2, 3, 4  =  %4d,%4d,%4d,%4d\r\n",  test_counter1, test_counter2,test_counter3, test_counter4));
     APP_TRACE_INFO(("Test Counter:  UART_WriteStart Failed :  %4d  times\r\n",   test_counter5));
     APP_TRACE_INFO(("\r\n"));
     Get_Task_Info ();
+    Get_Flash_Info ();
     //APP_TRACE_INFO(("\r\n")); 
 
 }
