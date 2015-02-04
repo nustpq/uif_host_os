@@ -69,6 +69,7 @@
 #include  <spi.h>
 #include  <flashd.h>
 #include  <twid.h>
+#include  <i2c_gpio.h>
 #include  <ruler.h>
 #include  <emb.h>
 #include  <mem_basic.h>

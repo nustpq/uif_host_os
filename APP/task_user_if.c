@@ -85,7 +85,8 @@ void  App_TaskUserIF (void *p_arg)
             switch( key_state & MSG_TYPE_MASK ) {                
                 case MSG_TYPE_RESET : //reset send msg                
                     //PDM_Pattern_Gen(0); //gen cp2240 pattern
-                    Head_Info();                   
+                    Head_Info();
+                   
                 break;
                     
                 case MSG_TYPE_SWITCH ://Switch                

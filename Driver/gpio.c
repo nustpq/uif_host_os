@@ -99,7 +99,7 @@ unsigned char  GPIOPIN_Set(unsigned int pin , unsigned int dat)
         
     }
     
-    APP_TRACE_INFO(("\r\nSet GPIO[%d]=%d ", pin, dat));
+    //APP_TRACE_INFO(("\r\nSet GPIO[%d]=%d ", pin, dat));
 
     switch ( dat ) {
         
@@ -151,6 +151,79 @@ unsigned char  GPIOPIN_Get(unsigned int pin , unsigned char *pdat)
     
     
 }
+
+
+void  __ramfunc GPIOPIN_Set_Fast( unsigned char pin , unsigned char data )
+{    
+     
+    switch( data ) {
+        
+        case 0 : //output 0
+            
+            pinsGpios[pin].pio->PIO_CODR = pinsGpios[pin].mask; 
+            pinsGpios[pin].pio->PIO_OER  = pinsGpios[pin].mask;
+        break;
+        
+        case 1 : //output 1
+            pinsGpios[pin].pio->PIO_SODR = pinsGpios[pin].mask;
+            pinsGpios[pin].pio->PIO_OER  = pinsGpios[pin].mask;
+        break; 
+        
+        case 2 : //input        
+            pinsGpios[pin].pio->PIO_ODR  = pinsGpios[pin].mask;
+        break;
+        
+        default:
+        break;             
+   } 
+   
+}
+
+
+void  __ramfunc GPIOPIN_Get_Fast( unsigned char pin, unsigned char * pdata )
+{
+    unsigned int reg ;
+    
+    reg = pinsGpios[pin].pio->PIO_PDSR;    
+
+    if ((reg & pinsGpios[pin].mask) == 0) {
+
+        *pdata = 0 ;
+    }
+    else {
+
+        *pdata = 1 ;
+    }
+    
+}
+
+
+void GPIOPIN_Init_Fast( unsigned int pin )
+{
+    
+    pinsGpios[pin].pio->PIO_IDR = pinsGpios[pin].mask;
+    
+    //pull up
+    pinsGpios[pin].pio->PIO_PPUER = pinsGpios[pin].mask;  //enable
+    //pinsGpios[pin].pio->PIO_PPUDR = pinsGpios[pin].mask;
+    
+    //multi-drive OP
+    //pinsGpios[pin].pio->PIO_MDER = pinsGpios[pin].mask;  //enable
+    pinsGpios[pin].pio->PIO_MDDR = pinsGpios[pin].mask;
+    
+    // Enable filter(s)
+    pinsGpios[pin].pio->PIO_IFER = pinsGpios[pin].mask;  //enable
+    //pinsGpios[pin].pio->PIO_IFDR = pinsGpios[pin].mask;
+    
+    pinsGpios[pin].pio->PIO_PER = pinsGpios[pin].mask;  
+    
+}
+
+
+
+
+
+
 //// additional time delay :  +10us
 //// so, the critical time delay is 11us
 void  __ramfunc GPIOPIN_Set_Session( unsigned int pin , unsigned int dat )
@@ -171,6 +244,7 @@ void  __ramfunc GPIOPIN_Set_Session( unsigned int pin , unsigned int dat )
         }         
      }     
 }
+
 
 
 typedef struct __MONITCTR 

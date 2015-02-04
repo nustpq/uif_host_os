@@ -138,6 +138,16 @@ unsigned char Setup_Interface( INTERFACE_CFG *pInterface_Cfg )
             }   
         break ;  
         
+        case UIF_TYPE_I2C_GPIO :
+            if( temp <= 400 && temp >= 10) { 
+                I2C_GPIO_Init( temp * 1000 );     
+                APP_TRACE_INFO(("\r\nI2C port is set to GPIO simluated %d kHz\r\n",temp));        
+            }  else {
+                APP_TRACE_INFO(("\r\nERROR: I2C speed not support %d kHz\r\n",temp));
+                err = SET_I2C_ERR ;
+            }   
+        break ;
+        
         case UIF_TYPE_SPI :  
             if( temp <= 1000 && temp >= 10) {  
                 SPI_Init(  temp * 1000, pInterface_Cfg->attribute );    
@@ -257,6 +267,14 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
                     }
                  }
                 
+            } else if( Global_UIF_Setting[p_raw_write->if_type - 1 ].attribute == ATTRI_IM205) { 
+                        
+                state =  I2C_GPIO_Write_iM205 ( p_raw_write->dev_addr>>1, *pChar, *(pChar+1) );                                
+                if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                }           
+                
             } else {                
               state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, p_raw_write->pdata, p_raw_write->data_len, NULL );       
               if (state != SUCCESS) {
@@ -340,25 +358,33 @@ unsigned char Raw_Read( RAW_READ *p_raw_read )
     switch( p_raw_read->if_type ) {
         
         case UIF_TYPE_I2C:
-              state =  TWID_Write( p_raw_read->dev_addr>>1,
-                                  0, 
-                                  0, 
-                                  p_raw_read->pdata_write, 
-                                  p_raw_read->data_len_write, 
-                                  NULL );     
-              if (state != SUCCESS) {
-                  err = I2C_BUS_ERR;
-              } 
-              
-              state =  TWID_Read( p_raw_read->dev_addr>>1,
-                                  0, 
-                                  0, 
-                                  pbuf, 
-                                  p_raw_read->data_len_read, 
-                                  NULL );     
-              if (state != SUCCESS) {
-                  err = I2C_BUS_ERR;
-              } 
+              if( Global_UIF_Setting[p_raw_read->if_type - 1 ].attribute == ATTRI_IM205 ) {                  
+                  state = I2C_GPIO_Read_iM205(p_raw_read->dev_addr>>1, *(p_raw_read->pdata_write), pbuf); 
+                  if (state != SUCCESS) {
+                      err = I2C_BUS_ERR;
+                  }
+                  
+              } else {
+                  state =  TWID_Write( p_raw_read->dev_addr>>1,
+                                      0, 
+                                      0, 
+                                      p_raw_read->pdata_write, 
+                                      p_raw_read->data_len_write, 
+                                      NULL );     
+                  if (state != SUCCESS) {
+                      err = I2C_BUS_ERR;
+                  } 
+                  
+                  state =  TWID_Read( p_raw_read->dev_addr>>1,
+                                      0, 
+                                      0, 
+                                      pbuf, 
+                                      p_raw_read->data_len_read, 
+                                      NULL );     
+                  if (state != SUCCESS) {
+                      err = I2C_BUS_ERR;
+                  } 
+              }
         break;
         
         case UIF_TYPE_SPI:      

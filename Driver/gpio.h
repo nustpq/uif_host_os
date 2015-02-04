@@ -49,6 +49,11 @@ extern void Enable_FPGA( void ) ;
 extern void Disable_FPGA( void );
 extern void Init_FPGA( unsigned int channels );
 extern void Ruler_Power_Switch( unsigned char onoff );
+
+extern void GPIOPIN_Init_Fast( unsigned int pin );
+extern void GPIOPIN_Get_Fast( unsigned char pin, unsigned char * pdata );
+extern void GPIOPIN_Set_Fast( unsigned char pin , unsigned char data );
+
 #endif
 
 

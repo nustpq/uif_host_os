@@ -205,7 +205,7 @@
 
 /// TWI pins definition.
 #define PINS_TWI  {0x00000003, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_PERIPH_A, PIO_DEFAULT}
-
+                     
 /// MCI pins definition.
 #define PINS_MCI  {0x0003F000, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_PERIPH_B, PIO_DEFAULT}
 

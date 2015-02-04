@@ -1087,6 +1087,12 @@
       <name>$PROJ_DIR$\..\Driver\gpio.h</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\Driver\i2c_gpio.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Driver\i2c_gpio.h</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\Driver\led.c</name>
     </file>
     <file>
