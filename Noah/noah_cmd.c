@@ -811,32 +811,32 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             Send_GACK(err);           
         break ;
         
-        case PC_CMD_BURST_WRITE :
-            Send_DACK(err);            
-            temp = emb_get_attr_int(&root, 1, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.burst_write.if_type = (CPU_INT08U)temp;             
-            temp = emb_get_attr_int(&root, 2, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.burst_write.dev_addr = (CPU_INT08U)temp;              
-            temp = emb_get_attr_int(&root, 3, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.burst_write.mem_addr_l = (CPU_INT16U)temp;    
-            temp = emb_get_attr_int(&root, 4, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.burst_write.mem_addr_h = (CPU_INT16U)temp;             
-            temp = emb_get_attr_int(&root, 5, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.burst_write.mem_addr_len = (CPU_INT08U)temp;            
-            temp = emb_get_attr_int(&root, 6, -1);
-            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.burst_write.data_len = (CPU_INT32U)temp;             
-            pBin = emb_get_attr_binary(&root, 7, (int*)&PCCmd.burst_write.data_len);
-            if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.burst_write.pdata = (CPU_INT08U *)pBin;             
-            err = Write_Burst( PCCmd.burst_write );
-            Send_GACK(err);
-        break ;
+//        case PC_CMD_BURST_WRITE :
+//            Send_DACK(err);            
+//            temp = emb_get_attr_int(&root, 1, -1);
+//            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+//            PCCmd.burst_write.if_type = (CPU_INT08U)temp;             
+//            temp = emb_get_attr_int(&root, 2, -1);
+//            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+//            PCCmd.burst_write.dev_addr = (CPU_INT08U)temp;              
+//            temp = emb_get_attr_int(&root, 3, -1);
+//            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+//            PCCmd.burst_write.mem_addr_l = (CPU_INT16U)temp;    
+//            temp = emb_get_attr_int(&root, 4, -1);
+//            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+//            PCCmd.burst_write.mem_addr_h = (CPU_INT16U)temp;             
+//            temp = emb_get_attr_int(&root, 5, -1);
+//            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+//            PCCmd.burst_write.mem_addr_len = (CPU_INT08U)temp;            
+//            temp = emb_get_attr_int(&root, 6, -1);
+//            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+//            PCCmd.burst_write.data_len = (CPU_INT32U)temp;             
+//            pBin = emb_get_attr_binary(&root, 7, (int*)&PCCmd.burst_write.data_len);
+//            if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }
+//            PCCmd.burst_write.pdata = (CPU_INT08U *)pBin;             
+//            err = Write_Burst( PCCmd.burst_write );
+//            Send_GACK(err);
+//        break ;
           
 //        case PC_CMD_BURST_READ :
 //            Send_DACK(err);
@@ -885,7 +885,7 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             temp = emb_get_attr_int(&root, 3, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
             PCCmd.set_vec_cfg.delay = (CPU_INT32U)temp;                
-            err = Set_DSP_VEC(  &PCCmd.set_vec_cfg );    
+            err = Set_DSP_VEC( &PCCmd.set_vec_cfg );    
             Send_GACK(err);
         break ;
         ////////////////////////////////////////////////////////////////////////        

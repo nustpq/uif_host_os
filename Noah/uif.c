@@ -200,7 +200,7 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
 {  
     
     unsigned char  state, err;
-    unsigned char  buf[5] ; 
+    unsigned char  buf[8] ; 
     unsigned char *pChar;
     unsigned int   i, size;
     
@@ -212,9 +212,10 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
     pChar  = p_raw_write->pdata ;
     
     switch( p_raw_write->if_type ) {
-        
+        ////////////////////////////////////////////////////////////////////////
         case UIF_TYPE_I2C:  
         
+             //iM401 
             if( Global_UIF_Setting[p_raw_write->if_type - 1 ].attribute == ATTRI_IM401_LOAD_CODE ) {
                 OSTimeDly(1); 
                 
@@ -249,6 +250,7 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
                     //OSTimeDly(1); 
                 }
                 
+            //FM1388 EEPROM    
             } else if( Global_UIF_Setting[p_raw_write->if_type - 1 ].attribute == ATTRI_FM1388_LOAD_EEPROM) { 
                 size = p_raw_write->data_len / EEPROM_ALLOWED_DATA_PACK_SIZE ;       
                 for( i = 0 ; i < size ; i++ ) { 
@@ -267,14 +269,96 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
                     }
                  }
                 
+            //iM205    
             } else if( Global_UIF_Setting[p_raw_write->if_type - 1 ].attribute == ATTRI_IM205) { 
                         
                 state =  I2C_GPIO_Write_iM205 ( p_raw_write->dev_addr>>1, *pChar, *(pChar+1) );                                
                 if ( state != SUCCESS ) {
                     err = I2C_BUS_ERR;
                     break; 
-                }           
+                }  
                 
+            //iM501 IRAM    
+            } else if( Global_UIF_Setting[p_raw_write->if_type - 1 ].attribute == ATTRI_IM501_LOAD_CODE_IRAM) {
+                 OSTimeDly(1);            
+                 buf[0] = 0x4A;  //Command byte, write I2C host register with one address byte and two data bytes
+                 buf[1] = 0x08;  //address, byte counter                 
+                 buf[2] = ((p_raw_write->data_len - 3 - 4 - 1) >> 8) & 0xFF;
+                 buf[3] = (p_raw_write->data_len - 3 - 4 - 1 ) & 0xFF;
+                 state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, buf, 4,  NULL );                 
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }
+                 buf[0] = 0x0D;  
+                 
+                 buf[1] = *pChar++; //Addrss MSB
+                 buf[2] = *pChar++; 
+                 buf[3] = *pChar++; //Addrss MSB  
+                 
+                 buf[4] = *pChar++; //data MSB
+                 buf[5] = *pChar++;
+                 buf[6] = *pChar++;
+                 buf[7] = *pChar++; //data LSB
+                 
+                 state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, buf, 8,  NULL );                  
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }                    
+                 buf[0] = 0x88; //data only        
+                 state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, buf, 1,  NULL );                 
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }
+                 state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, pChar, p_raw_write->data_len - 3 - 4,  NULL );               
+                 if (state != SUCCESS) {
+                    err = I2C_BUS_ERR;
+                    break;                  
+                 }                      
+                  //OSTimeDly(1);   
+                 
+             //iM501 DRAM     
+             } else if( Global_UIF_Setting[p_raw_write->if_type - 1 ].attribute == ATTRI_IM501_LOAD_CODE_DRAM) {
+                 OSTimeDly(1);            
+                 buf[0] = 0x4A;  //Command byte, write I2C host register with one address byte and two data bytes
+                 buf[1] = 0x08;  //address, byte counter                 
+                 buf[2] = ((p_raw_write->data_len - 3 - 2 - 1) >> 8) & 0xFF;
+                 buf[3] = (p_raw_write->data_len - 3 - 2 - 1) & 0xFF;
+                 state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, buf, 4,  NULL );                 
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }
+                 buf[0] = 0x2B;
+                 
+                 buf[1] = *pChar++; //Addrss MSB
+                 buf[2] = *pChar++;  
+                 buf[3] = *pChar++; //Addrss LSB 
+                 
+                 buf[4] = *pChar++; //data MSB
+                 buf[5] = *pChar++; //data LSB 
+                 
+                 state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, buf, 6,  NULL );                  
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }                    
+                 buf[0] = 0xA8; //data only        
+                 state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, buf, 1,  NULL );                 
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }
+                 state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, pChar, p_raw_write->data_len - 3 - 2,  NULL );               
+                 if (state != SUCCESS) {
+                    err = I2C_BUS_ERR;
+                    break;                  
+                 }                      
+                  //OSTimeDly(1);  
+                 
+            // Normal case    
             } else {                
               state =  TWID_Write( p_raw_write->dev_addr>>1, 0, 0, p_raw_write->pdata, p_raw_write->data_len, NULL );       
               if (state != SUCCESS) {
@@ -283,7 +367,7 @@ unsigned char Raw_Write( RAW_WRITE *p_raw_write )
               
             }
         break;
-        
+        //////////////////////////////////////////////////////////
         case UIF_TYPE_SPI:
               if( Global_UIF_Setting[p_raw_write->if_type - 1 ].attribute == ATTRI_FM1388_LOAD_CODE ) {
                   size = p_raw_write->data_len / FM1388_ALLOWED_DATA_PACK_SIZE ;                
@@ -435,13 +519,11 @@ unsigned char Raw_Read( RAW_READ *p_raw_read )
 
 
 
-
-
 unsigned char Write_Burst( BURST_WRITE burst_write )
 {  
     
     unsigned char   state, err;
-    unsigned char   buf[5] ;  
+    unsigned char   buf[8] ;  
     unsigned char  *pchar;
     
     APP_TRACE_INFO(("\r\nWrite_Burst: if_type=%d, mem_addr=0x%02X:%02X, mem_addr_len=%d,data_len=%d ",\
@@ -461,44 +543,118 @@ unsigned char Write_Burst( BURST_WRITE burst_write )
     err = NO_ERR;
     //Reverse_Endian((unsigned char *)&raw_write.reg_addr, raw_write.reg_addr_len );
     //Reverse_Endian( (unsigned char *)&raw_write.data, raw_write.data_len );
-    
+  /*  
     switch( burst_write.if_type ) {
         
         case UIF_TYPE_I2C:
-                   if( Global_UIF_Setting[burst_write.if_type - 1 ].attribute == ATTRI_IM401_LOAD_CODE ) {
-                     OSTimeDly(1);            
-                   buf[0] = 0xF0;
-                   buf[1] = burst_write.mem_addr_l & 0xFF;
-                   buf[2] = (burst_write.mem_addr_l >> 8) & 0xFF;
-                   state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 3,  NULL );                 
-                    if ( state != SUCCESS ) {
-                        err = I2C_BUS_ERR;
-                        break; 
-                    }
-                    buf[0] = 0xF1;
-                    buf[1] = burst_write.mem_addr_h & 0xFF;
-                    buf[2] = (burst_write.mem_addr_h >> 8) & 0xFF;
-                    state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 3,  NULL );                  
-                    if ( state != SUCCESS ) {
-                        err = I2C_BUS_ERR;
-                        break; 
-                    }                    
-                    buf[0] = 0xF8;
-                    pchar = burst_write.pdata;
-                    for( unsigned int i =0 ; i <(burst_write.data_len>>2) ; i++ ) {  
-                        buf[1] = *pchar++;
-                        buf[2] = *pchar++;
-                        buf[3] = *pchar++;
-                        buf[4] = *pchar++;
-                        state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 5,  NULL );               
-                        if (state != SUCCESS) {
-                            err = I2C_BUS_ERR;
-                            break;                  
-                     }                      
+            if( Global_UIF_Setting[burst_write.if_type - 1 ].attribute == ATTRI_IM401_LOAD_CODE ) {
+                OSTimeDly(1);            
+                 buf[0] = 0xF0;
+                 buf[1] = burst_write.mem_addr_l & 0xFF;
+                 buf[2] = (burst_write.mem_addr_l >> 8) & 0xFF;
+                 state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 3,  NULL );                 
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }
+                 buf[0] = 0xF1;
+                 buf[1] = burst_write.mem_addr_h & 0xFF;
+                 buf[2] = (burst_write.mem_addr_h >> 8) & 0xFF;
+                 state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 3,  NULL );                  
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }                    
+                 buf[0] = 0xF8;
+                 pchar = burst_write.pdata;
+                 for( unsigned int i =0 ; i <(burst_write.data_len>>2) ; i++ ) {  
+                    buf[1] = *pchar++;
+                    buf[2] = *pchar++;
+                    buf[3] = *pchar++;
+                    buf[4] = *pchar++;
+                    state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 5,  NULL );               
+                    if (state != SUCCESS) {
+                      err = I2C_BUS_ERR;
+                      break;                  
+                    }                      
                      //OSTimeDly(1); 
-                    }
-            
-              } else {
+                 }
+                 
+            } else if( Global_UIF_Setting[burst_write.if_type - 1 ].attribute == ATTRI_IM501_LOAD_CODE_IRAM) {
+                 OSTimeDly(1);            
+                 buf[0] = 0x4A;  //Command byte, write I2C host register with one address byte and two data bytes
+                 buf[1] = 0x08;  //address, byte counter                 
+                 buf[2] = (burst_write.data_len >> 8) & 0xFF;
+                 buf[3] = burst_write.data_len & 0xFF;
+                 state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 4,  NULL );                 
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }
+                 buf[0] = 0x0D;                 
+                 buf[1] = (burst_write.mem_addr_h >> 16) & 0xFF;
+                 buf[2] = (burst_write.mem_addr_h >> 8)  & 0xFF;
+                 buf[3] = burst_write.mem_addr_h & 0xFF;
+                 pchar = burst_write.pdata;
+                 buf[4] = *pchar++;
+                 buf[5] = *pchar++;
+                 buf[6] = *pchar++;
+                 buf[7] = *pchar++;
+                 state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 8,  NULL );                  
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }                    
+                 buf[0] = 0x88; //data only        
+                 state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 1,  NULL );                 
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }
+                 state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, pchar, burst_write.data_len - 4,  NULL );               
+                 if (state != SUCCESS) {
+                    err = I2C_BUS_ERR;
+                    break;                  
+                 }                      
+                  //OSTimeDly(1);                          
+                
+             } else if( Global_UIF_Setting[burst_write.if_type - 1 ].attribute == ATTRI_IM501_LOAD_CODE_DRAM) {
+                 OSTimeDly(1);            
+                 buf[0] = 0x4A;  //Command byte, write I2C host register with one address byte and two data bytes
+                 buf[1] = 0x08;  //address, byte counter                 
+                 buf[2] = (burst_write.data_len >> 8) & 0xFF;
+                 buf[3] = burst_write.data_len & 0xFF;
+                 state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 4,  NULL );                 
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }
+                 buf[0] = 0x2B;                 
+                 buf[1] = (burst_write.mem_addr_h >> 16) & 0xFF;
+                 buf[2] = (burst_write.mem_addr_h >> 8)  & 0xFF;
+                 buf[3] = burst_write.mem_addr_h & 0xFF;
+                 pchar = burst_write.pdata;
+                 buf[4] = *pchar++;
+                 buf[5] = *pchar++;            
+                 state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 6,  NULL );                  
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }                    
+                 buf[0] = 0xA8; //data only        
+                 state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, buf, 1,  NULL );                 
+                 if ( state != SUCCESS ) {
+                    err = I2C_BUS_ERR;
+                    break; 
+                 }
+                 state =  TWID_Write( burst_write.dev_addr>>1, 0, 0, pchar, burst_write.data_len - 2,  NULL );               
+                 if (state != SUCCESS) {
+                    err = I2C_BUS_ERR;
+                    break;                  
+                 }                      
+                  //OSTimeDly(1);                          
+              
+            } else {
 //                    state =  TWID_Write( burst_write.dev_addr>>1, 
 //                                  burst_write.mem_addr, 
 //                                  burst_write.mem_addr_len, 
@@ -510,7 +666,7 @@ unsigned char Write_Burst( BURST_WRITE burst_write )
 //                        err = I2C_BUS_ERR;
 //                  
 //                    } 
-              }
+            }
         break;
         
         case UIF_TYPE_SPI:
@@ -531,7 +687,9 @@ unsigned char Write_Burst( BURST_WRITE burst_write )
              err = UIF_TYPE_NOT_SUPPORT ;             
         break;
     }
-        
+    
+    
+ */       
     return err;
     
 }

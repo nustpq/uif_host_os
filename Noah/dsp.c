@@ -743,8 +743,7 @@ unsigned char iM401_Standby( void )
         if ( state != SUCCESS )  {
             return(I2C_BUS_ERR) ;
         } 
-    }   
-    
+    }       
     return 0;
     
 }   
@@ -761,8 +760,7 @@ unsigned char iM401_Bypass( void )
         if ( state != SUCCESS )  {
             return(I2C_BUS_ERR) ;
         }
-    }   
-    
+    }       
     return 0;
     
 }

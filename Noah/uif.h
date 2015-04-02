@@ -20,11 +20,12 @@
 #define   UIF_TYPE_FM36_PATH    4
 #define   UIF_TYPE_I2C_GPIO     5
 
+#define   ATTRI_IM501_LOAD_CODE_IRAM       52
+#define   ATTRI_IM501_LOAD_CODE_DRAM       51
 #define   ATTRI_IM401_LOAD_CODE            41
 #define   ATTRI_FM1388_LOAD_CODE           31
 #define   ATTRI_FM1388_LOAD_EEPROM         21
 #define   ATTRI_IM205                      11
-
 
 #define   FM1388_ALLOWED_DATA_PACK_SIZE    (240+6)
 #define   EEPROM_ALLOWED_DATA_PACK_SIZE    (128+2)

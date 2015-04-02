@@ -1360,17 +1360,15 @@ unsigned char Save_DSP_VEC( MCU_FLASH *p_dsp_vec )
 *********************************************************************************************************
 *                                       Set_DSP_VEC()
 *
-* Description : Save ruler FW bin file to flash
+* Description : set config setting for load DSP¡¡vector from flash
 *               
-* Argument(s) :  cmd  :  1~ 3.
-*               *pBin : pointer to bin file data packge to be wriiten to flash
-*               *pStr : pointer to file name string
-*                size : bin package file size 
+* Argument(s) :  *p_dsp_vec_cfg :  .
+*              
 *
 * Return(s)   : NO_ERR :   execute successfully
 *               others :   =error code .  
 *
-* Note(s)     : Vec size usually not exceed 2kB, so one emb package should be ok.
+* Note(s)     : 
 *********************************************************************************************************
 */
  
