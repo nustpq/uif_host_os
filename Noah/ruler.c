@@ -238,20 +238,20 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
         APP_TRACE_INFO(("\r\nSetup_Audio ERROR: %d\r\n ",data)); 
         return data; 
     }
-    err = Init_CODEC( pAudioCfg->sr,  pAudioCfg->bit_length);
-    if( err != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nSetup_Audio Init_CODEC ERROR: %d\r\n",err)); 
-    } 
-#ifdef BOARD_TYPE_AB03  
-    err = Init_FM36_AB03( pAudioCfg->sr, mic_num, 1, 0 ); //Lin from SP1_RX, slot0~1
-#elif defined BOARD_TYPE_UIF
-    err = Init_FM36_AB03( pAudioCfg->sr, mic_num, 1, 0, pAudioCfg->bit_length ); //Lin from SP1_RX, slot0~1
-#else
-    err = ReInit_FM36( pAudioCfg->sr ); 
-#endif
-    if( err != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nSetup_Audio ReInit_FM36 ERROR: %d\r\n",err)); 
-    }
+//    err = Init_CODEC( pAudioCfg->sr,  pAudioCfg->bit_length);
+//    if( err != NO_ERR ) {
+//        APP_TRACE_INFO(("\r\nSetup_Audio Init_CODEC ERROR: %d\r\n",err)); 
+//    } 
+//#ifdef BOARD_TYPE_AB03  
+//    err = Init_FM36_AB03( pAudioCfg->sr, mic_num, 1, 0 ); //Lin from SP1_RX, slot0~1
+//#elif defined BOARD_TYPE_UIF
+//    err = Init_FM36_AB03( pAudioCfg->sr, mic_num, 1, 0, pAudioCfg->bit_length ); //Lin from SP1_RX, slot0~1
+//#else
+//    err = ReInit_FM36( pAudioCfg->sr ); 
+//#endif
+//    if( err != NO_ERR ) {
+//        APP_TRACE_INFO(("\r\nSetup_Audio ReInit_FM36 ERROR: %d\r\n",err)); 
+//    }
     
 //    if ( pAudioCfg->lin_ch_mask != 0 ) {
 //        err = Set_AIC3204_DSP_Offset( mic_num );
@@ -1766,7 +1766,7 @@ void AB_POST( void )
 #ifdef BOARD_TYPE_AB03   
     err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0 ); //Lin from SP1.Slot0
 #elif defined BOARD_TYPE_UIF
-    err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0, SAMPLE_LENGTH  ); //Lin from SP1.Slot0
+    err = Init_FM36_AB03( SAMPLE_RATE_DEF, 6, 1, 0, SAMPLE_LENGTH  ); //6 mics Lin from SP1.Slot0
 #else 
     err = Init_FM36( SAMPLE_RATE_DEF );
 #endif
