@@ -1767,6 +1767,7 @@ void AB_POST( void )
     err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0 ); //Lin from SP1.Slot0
 #elif defined BOARD_TYPE_UIF
     err = Init_FM36_AB03( SAMPLE_RATE_DEF, 6, 1, 0, SAMPLE_LENGTH  ); //6 mics Lin from SP1.Slot0
+    err = Init_FM36_AB03( SAMPLE_RATE_DEF, 6, 1, 0, SAMPLE_LENGTH  ); 
 #else 
     err = Init_FM36( SAMPLE_RATE_DEF );
 #endif
