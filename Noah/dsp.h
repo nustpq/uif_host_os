@@ -37,5 +37,5 @@ extern unsigned char iM401_Bypass( void );
 extern unsigned char iM401_Standby( void );
 
 extern unsigned char FM36_PWD_Bypass( void );
-
+unsigned char FM36_PDMADC_CLK_OnOff( unsigned char onoff, unsigned char fast_switch );
 #endif

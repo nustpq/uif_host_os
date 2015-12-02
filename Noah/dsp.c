@@ -826,3 +826,57 @@ unsigned char iM401_Load_Vec( void )
 
 
 
+//onoff       : 0 - turn off PDM clock, 1 - turn on PDM clock
+//fast_switch : 0 - normal usage,  1 - fast onoff switch, not care pop sound
+unsigned char FM36_PDMADC_CLK_OnOff( unsigned char onoff, unsigned char fast_switch )
+{
+    unsigned char  err ;  
+    
+    //if( flag_state_pwd ) return 0 ;
+     
+    APP_TRACE_INFO(("\r\nEnable/Disbale FM36 ADC PDM CLK: %d",onoff));    
+
+    if( onoff ) {  //PDMCLK_ON, for normal operation 
+        
+        err = DM_SingleWrite( FM36_I2C_ADDR, 0x3FCF, 0x0020 ) ;  //turn on clk
+        if( OS_ERR_NONE != err ) {
+            return FM36_WR_DM_ERR;
+        }          
+        err = DM_SingleWrite( FM36_I2C_ADDR, 0x3F90, 0x0000 ) ;  //power up MIC0-5
+        if( OS_ERR_NONE != err ) {
+            return FM36_WR_DM_ERR;
+        }  
+        if( fast_switch == 0 ) {
+          OSTimeDly(5);  //depop time
+        }
+        err = DM_SingleWrite( FM36_I2C_ADDR, 0x3F96, 0x003F ) ;  //unmute MIC0-5
+        if( OS_ERR_NONE != err ) {
+            return FM36_WR_DM_ERR;
+        }  
+        
+    } else { //PDMCLK_OFF
+        
+        err = DM_SingleWrite( FM36_I2C_ADDR, 0x3F96, 0x3F3F ) ;  //mute MIC0-5
+        if( OS_ERR_NONE != err ) {
+            return FM36_WR_DM_ERR;
+        }  
+        if( fast_switch == 0 ) {
+            OSTimeDly(10); //wait data 0 to cyclebuffer
+        }
+        err = DM_SingleWrite( FM36_I2C_ADDR, 0x3F90, 0x003F ) ;  //power down MIC0-5 
+        if( OS_ERR_NONE != err ) {
+            return FM36_WR_DM_ERR;
+        } 
+        if( fast_switch == 0 ) {
+            OSTimeDly(5);
+        }
+        err = DM_SingleWrite( FM36_I2C_ADDR, 0x3FCF, 0x0024 ) ;  //turn off clk
+        if( OS_ERR_NONE != err ) {
+            return FM36_WR_DM_ERR;
+        } 
+        
+    }
+    
+    return err;
+    
+}  

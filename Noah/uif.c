@@ -756,3 +756,39 @@ unsigned char Read_Burst( BURST_READ burst_read )
     return err;
     
 }
+
+ 
+void do_leetay_init( void )
+{    
+   
+   //I2C_GPIO_Init( 100 * 1000, 8, 9  );  
+   
+  // I2C_Mixer(I2C_MIX_FM36_CODEC);
+   FM36_PDMADC_CLK_OnOff(0,0); //disable PDM clock
+  // I2C_Mixer(I2C_MIX_UIF_S); 
+    
+    
+}
+
+void do_leetay_test( unsigned int delay_ms )
+{
+   unsigned char buf[] = {0x02,0x08};
+   
+  // I2C_Mixer(I2C_MIX_FM36_CODEC);
+   FM36_PDMADC_CLK_OnOff(1,0); //enable PDM clock
+  // I2C_Mixer(I2C_MIX_UIF_S); 
+   
+   OSTimeDly(300);     
+   I2C_GPIO_Write (0xA4>>1, buf, sizeof(buf)) ;
+   
+   if(delay_ms == 200) {
+      OSTimeDly(100);     
+      I2C_GPIO_Write (0xA4>>1, buf, sizeof(buf)) ;        
+   } else if(delay_ms == 300) {
+      OSTimeDly(100);     
+      I2C_GPIO_Write (0xA4>>1, buf, sizeof(buf)) ; 
+      OSTimeDly(100);     
+      I2C_GPIO_Write (0xA4>>1, buf, sizeof(buf)) ; 
+   }
+           
+}

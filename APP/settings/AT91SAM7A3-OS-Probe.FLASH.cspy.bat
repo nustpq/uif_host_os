@@ -19,6 +19,6 @@
 @REM 
 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\common\bin\cspybat" "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\arm\bin\armproc.dll" "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\arm\bin\armjlink.dll"  %1 --plugin "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\arm\bin\armbat.dll" --backend -B "--endian=little" "--cpu=ARM7TDMI" "--fpu=None" "-p" "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\arm\CONFIG\debugger\Atmel\at91sam7a3.ddf" "--drv_verify_download" "--semihosting=none" "--device=AT91SAM7A3" "--jlink_device_select=0" "--drv_communication=USB0" "--jlink_speed=adaptive" "--jlink_reset_strategy=0,8" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\common\bin\cspybat" "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\arm\bin\armproc.dll" "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\arm\bin\armjlink.dll"  %1 --plugin "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\arm\bin\armbat.dll" --backend -B "--endian=little" "--cpu=ARM7TDMI" "--fpu=None" "-p" "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\arm\CONFIG\debugger\Atmel\at91sam7a3.ddf" "--drv_verify_download" "--semihosting=none" "--device=AT91SAM7A3" "--jlink_device_select=0" "--drv_communication=USB0" "--jlink_speed=auto" "--jlink_initial_speed=32" "--jlink_reset_strategy=0,8" 
 
 
